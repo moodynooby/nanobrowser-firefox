@@ -24,8 +24,12 @@ function withFirefoxSidebar(manifest) {
     // Firefox-specific settings
     browser_specific_settings: {
       gecko: {
-        id: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}',
-        strict_min_version: '115.0',
+        id: 'manas@manas.com',
+        strict_min_version: '140.0',
+        data_collection_permissions: {
+          required: ['browsingActivity', 'websiteContent'],
+          optional: ['technicalAndInteraction'],
+        },
       },
     },
   });
@@ -88,57 +92,74 @@ function withBrowserPermissions(manifest) {
 }
 
 /**
+ * Adds data collection permissions disclosure.
+ * Required by Chrome Web Store for transparency about user data handling.
+ */
+function withDataCollectionPermissions(manifest) {
+  return deepmerge(manifest, {
+    data_collection_permissions: {
+      // No data collected by the extension itself
+      collected_data_categories: [],
+      // Extension does not share user data with third parties
+      shared_data_categories: [],
+    },
+  });
+}
+
+/**
  * After changing, please reload the extension at `chrome://extensions`
  * @type {chrome.runtime.ManifestV3}
  */
-const manifest = withOperaSidebar(
-  withChromeSidePanel(
-    withFirefoxSidebar(
-      withBrowserPermissions({
-        manifest_version: 3,
-        default_locale: 'en',
-        /**
-         * if you want to support multiple languages, you can use the following reference
-         * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
-         */
-        name: '__MSG_app_metadata_name__',
-        version: packageJson.version,
-        description: '__MSG_app_metadata_description__',
-        host_permissions: ['<all_urls>'],
-        permissions: ['storage', 'scripting', 'tabs', 'activeTab', 'debugger', 'unlimitedStorage', 'webNavigation'],
-        options_page: 'options/index.html',
-        background: {
-          service_worker: 'background.iife.js',
-          type: 'module',
-        },
-        action: {
-          default_icon: 'icon-32.png',
-        },
-        icons: {
-          128: 'icon-128.png',
-        },
-        content_scripts: [
-          {
-            matches: ['http://*/*', 'https://*/*', '<all_urls>'],
-            all_frames: true,
-            js: ['content/index.iife.js'],
+const manifest = withDataCollectionPermissions(
+  withOperaSidebar(
+    withChromeSidePanel(
+      withFirefoxSidebar(
+        withBrowserPermissions({
+          manifest_version: 3,
+          default_locale: 'en',
+          /**
+           * if you want to support multiple languages, you can use the following reference
+           * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
+           */
+          name: '__MSG_app_metadata_name__',
+          version: packageJson.version,
+          description: '__MSG_app_metadata_description__',
+          host_permissions: ['<all_urls>'],
+          permissions: ['storage', 'scripting', 'tabs', 'activeTab', 'debugger', 'unlimitedStorage', 'webNavigation'],
+          options_page: 'options/index.html',
+          background: {
+            service_worker: 'background.iife.js',
+            type: 'module',
           },
-        ],
-        web_accessible_resources: [
-          {
-            resources: [
-              '*.js',
-              '*.css',
-              '*.svg',
-              'icon-128.png',
-              'icon-32.png',
-              'permission/index.html',
-              'permission/permission.js',
-            ],
-            matches: ['*://*/*'],
+          action: {
+            default_icon: 'icon-32.png',
           },
-        ],
-      }),
+          icons: {
+            128: 'icon-128.png',
+          },
+          content_scripts: [
+            {
+              matches: ['http://*/*', 'https://*/*', '<all_urls>'],
+              all_frames: true,
+              js: ['content/index.iife.js'],
+            },
+          ],
+          web_accessible_resources: [
+            {
+              resources: [
+                '*.js',
+                '*.css',
+                '*.svg',
+                'icon-128.png',
+                'icon-32.png',
+                'permission/index.html',
+                'permission/permission.js',
+              ],
+              matches: ['*://*/*'],
+            },
+          ],
+        }),
+      ),
     ),
   ),
 );
