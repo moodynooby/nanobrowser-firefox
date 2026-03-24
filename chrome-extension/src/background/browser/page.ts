@@ -4,7 +4,6 @@ import {
   ExtensionTransport,
   type HTTPRequest,
   type HTTPResponse,
-  type ProtocolType,
   type KeyInput,
 } from 'puppeteer-core/lib/esm/puppeteer/puppeteer-core-browser.js';
 import type { Browser } from 'puppeteer-core/lib/esm/puppeteer/api/Browser.js';
@@ -23,6 +22,10 @@ import { ClickableElementProcessor } from './dom/clickable/service';
 import { isUrlAllowed } from './util';
 
 const logger = createLogger('Page');
+
+// Detect if running in Firefox using webextension-polyfill's browser object
+// @ts-ignore - browser is provided by webextension-polyfill
+const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id;
 
 export function build_initial_state(tabId?: number, url?: string, title?: string): PageState {
   return {
@@ -73,13 +76,16 @@ export default class Page {
     this._config = { ...DEFAULT_BROWSER_CONTEXT_CONFIG, ...config };
     this._state = build_initial_state(tabId, url, title);
     // chrome://newtab/, chrome://newtab/extensions, https://chromewebstore.google.com/ are not valid web pages, can't be attached
+    // Firefox uses about:home, about:newtab instead of chrome:// URLs
     const lowerCaseUrl = url.trim().toLowerCase();
+    const isChromeNewTab =
+      lowerCaseUrl.startsWith('chrome://newtab') || lowerCaseUrl.startsWith('chrome://new-tab-page');
+    const isFirefoxNewTab = lowerCaseUrl === 'about:home' || lowerCaseUrl === 'about:newtab';
+    const isExtensionStore = lowerCaseUrl.startsWith('https://chromewebstore.google.com');
+    const isFirefoxAddons = lowerCaseUrl.startsWith('https://addons.mozilla.org');
+
     this._validWebPage =
-      (tabId &&
-        lowerCaseUrl &&
-        lowerCaseUrl.startsWith('http') &&
-        !lowerCaseUrl.startsWith('https://chromewebstore.google.com')) ||
-      false;
+      (tabId && lowerCaseUrl && lowerCaseUrl.startsWith('http') && !isExtensionStore && !isFirefoxAddons) || false;
   }
 
   get tabId(): number {
@@ -104,10 +110,14 @@ export default class Page {
     }
 
     logger.info('attaching puppeteer', this._tabId);
+
+    // Firefox uses WebDriver BiDi protocol by default in Puppeteer 24+
+    // Chrome uses CDP (Chrome DevTools Protocol)
     const browser = await connect({
       transport: await ExtensionTransport.connectTab(this._tabId),
       defaultViewport: null,
-      protocol: 'cdp' as ProtocolType,
+      // WebDriver BiDi is automatically used for Firefox in Puppeteer 24+
+      // For Chrome, CDP is used by default
     });
     this._browser = browser;
 

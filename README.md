@@ -57,11 +57,12 @@ Looking for a powerful AI browser agent without the $200/month price tag of Open
 **Officially Supported:**
 - **Chrome** - Full support with all features
 - **Edge** - Full support with all features
+- **Firefox** - Full support with all features (using WebDriver BiDi protocol)
 
 **Not Supported:**
-- Firefox, Safari, and other Chromium variants (Opera, Arc, etc.)
+- Safari and other non-Chromium/Firefox browsers
 
-> **Note**: While Nanobrowser may function on other Chromium-based browsers, we recommend using Chrome or Edge for the best experience and guaranteed compatibility.
+> **Note**: While Nanobrowser may function on other Chromium-based browsers (Opera, Arc, etc.), we recommend using Chrome, Edge, or Firefox for the best experience and guaranteed compatibility.
 
 
 ## 🚀 Quick Start
@@ -104,6 +105,26 @@ To get the most recent version with all the latest features:
     * Unzip and replace your existing Nanobrowser files with the new ones.
     * Go to `chrome://extensions/` in Chrome and click the refresh icon on the Nanobrowser card.
 
+### Firefox Installation
+
+1. **Download**:
+    * Download the latest `nanobrowser.zip` file from the official Github [release page](https://github.com/nanobrowser/nanobrowser/releases).
+    * Or build from source using `pnpm build:firefox`
+
+2. **Install**:
+    * Unzip `nanobrowser.zip`.
+    * Open `about:debugging#/runtime/this-firefox` in Firefox
+    * Click `Load Temporary Add-on`
+    * Select the `manifest.json` file from the unzipped folder
+
+3. **Configure Agent Models**:
+    * Click the Nanobrowser icon in your toolbar to open the sidebar
+    * Click the `Settings` icon (top right).
+    * Add your LLM API keys.
+    * Choose which model to use for different agents (Navigator, Planner)
+
+> **Note**: For permanent installation in Firefox, you'll need to sign the extension or use Firefox Developer Edition with `xpinstall.signatures.required` set to `false` in `about:config`.
+
 ## 🛠️ Build from Source
 
 If you prefer to build Nanobrowser yourself, follow these steps:
@@ -127,10 +148,16 @@ If you prefer to build Nanobrowser yourself, follow these steps:
    ```bash
    pnpm build
    ```
+   
+   For Firefox:
+   ```bash
+   pnpm build:firefox
+   ```
 
 5. **Load the Extension**:
    * The built extension will be in the `dist` directory
    * Follow the installation steps from the Manually Install section to load the extension into your browser
+   * For Firefox, use `about:debugging#/runtime/this-firefox` and load the `manifest.json`
 
 6. **Development Mode** (optional):
    ```bash

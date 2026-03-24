@@ -14,11 +14,17 @@ export function isUrlAllowed(url: string, allowList: string[], denyList: string[
 
   const lowerCaseUrl = trimmedUrl.toLowerCase();
 
+  // Detect if running in Firefox
+  // @ts-ignore - browser is provided by webextension-polyfill
+  const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id;
+
   // ALWAYS block dangerous/forbidden URLs, even if firewall is disabled
   const DANGEROUS_PREFIXES = [
     'https://chromewebstore.google.com', // scripts are not allowed to be injected into chrome web store
     'chrome-extension://',
     'chrome://',
+    'moz-extension://', // Firefox extension URLs
+    'about:addons', // Firefox addons page
     'javascript:',
     'data:',
     'file:',
@@ -92,9 +98,19 @@ export function isUrlAllowed(url: string, allowList: string[], denyList: string[
   }
 }
 
-// Check if a URL is a new tab page (about:blank or chrome://new-tab-page).
+// Check if a URL is a new tab page
+// Chrome uses chrome://newtab, Firefox uses about:home or about:newtab
 export function isNewTabPage(url: string): boolean {
-  return url === 'about:blank' || url === 'chrome://new-tab-page' || url === 'chrome://new-tab-page/';
+  const lowerCaseUrl = url.toLowerCase();
+  return (
+    url === 'about:blank' ||
+    lowerCaseUrl === 'chrome://newtab' ||
+    lowerCaseUrl === 'chrome://newtab/' ||
+    lowerCaseUrl === 'chrome://new-tab-page' ||
+    lowerCaseUrl === 'chrome://new-tab-page/' ||
+    lowerCaseUrl === 'about:home' ||
+    lowerCaseUrl === 'about:newtab'
+  );
 }
 
 export function capTextLength(text: string, maxLength: number): string {
