@@ -4,7 +4,6 @@ import {
   ExtensionTransport,
   type HTTPRequest,
   type HTTPResponse,
-  type ProtocolType,
   type KeyInput,
 } from 'puppeteer-core/lib/esm/puppeteer/puppeteer-core-browser.js';
 import type { Browser } from 'puppeteer-core/lib/esm/puppeteer/api/Browser.js';
@@ -23,6 +22,10 @@ import { ClickableElementProcessor } from './dom/clickable/service';
 import { isUrlAllowed } from './util';
 
 const logger = createLogger('Page');
+
+// Detect if running in Firefox using webextension-polyfill's browser object
+// @ts-ignore - browser is provided by webextension-polyfill
+const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id;
 
 export function build_initial_state(tabId?: number, url?: string, title?: string): PageState {
   return {
@@ -73,13 +76,16 @@ export default class Page {
     this._config = { ...DEFAULT_BROWSER_CONTEXT_CONFIG, ...config };
     this._state = build_initial_state(tabId, url, title);
     // chrome://newtab/, chrome://newtab/extensions, https://chromewebstore.google.com/ are not valid web pages, can't be attached
+    // Firefox uses about:home, about:newtab instead of chrome:// URLs
     const lowerCaseUrl = url.trim().toLowerCase();
+    const isChromeNewTab =
+      lowerCaseUrl.startsWith('chrome://newtab') || lowerCaseUrl.startsWith('chrome://new-tab-page');
+    const isFirefoxNewTab = lowerCaseUrl === 'about:home' || lowerCaseUrl === 'about:newtab';
+    const isExtensionStore = lowerCaseUrl.startsWith('https://chromewebstore.google.com');
+    const isFirefoxAddons = lowerCaseUrl.startsWith('https://addons.mozilla.org');
+
     this._validWebPage =
-      (tabId &&
-        lowerCaseUrl &&
-        lowerCaseUrl.startsWith('http') &&
-        !lowerCaseUrl.startsWith('https://chromewebstore.google.com')) ||
-      false;
+      (tabId && lowerCaseUrl && lowerCaseUrl.startsWith('http') && !isExtensionStore && !isFirefoxAddons) || false;
   }
 
   get tabId(): number {
@@ -99,15 +105,22 @@ export default class Page {
       return false;
     }
 
+    // Firefox doesn't support chrome.debugger API, which ExtensionTransport.connectTab requires
+    if (isFirefox) {
+      logger.warning('attachPuppeteer: Firefox does not support chrome.debugger API');
+      return false;
+    }
+
     if (this._puppeteerPage) {
       return true;
     }
 
     logger.info('attaching puppeteer', this._tabId);
+
+    // Chrome uses CDP (Chrome DevTools Protocol)
     const browser = await connect({
       transport: await ExtensionTransport.connectTab(this._tabId),
       defaultViewport: null,
-      protocol: 'cdp' as ProtocolType,
     });
     this._browser = browser;
 
@@ -439,6 +452,55 @@ export default class Page {
   }
 
   async takeScreenshot(fullPage = false): Promise<string | null> {
+    // Firefox doesn't support chrome.debugger API, use chrome.tabs.captureVisibleTab instead
+    if (isFirefox) {
+      try {
+        // Disable animations via scripting API
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: () => {
+            const styleId = 'screenshot-disable-animations';
+            if (!document.getElementById(styleId)) {
+              const style = document.createElement('style');
+              style.id = styleId;
+              style.textContent = `
+                *, *::before, *::after {
+                  animation: none !important;
+                  transition: none !important;
+                }
+              `;
+              document.head.appendChild(style);
+            }
+          },
+        });
+
+        // Capture the visible tab
+        const dataUrl = await chrome.tabs.captureVisibleTab(null, {
+          format: 'jpeg',
+          quality: 80,
+        });
+
+        // Clean up the style element
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: () => {
+            const style = document.getElementById('screenshot-disable-animations');
+            if (style) {
+              style.remove();
+            }
+          },
+        });
+
+        // Convert data URL to base64 (remove "data:image/jpeg;base64," prefix)
+        const base64 = dataUrl.split(',')[1];
+        return base64;
+      } catch (error) {
+        logger.error('Failed to take screenshot (Firefox mode):', error);
+        throw error;
+      }
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer page is not connected');
     }
@@ -498,14 +560,38 @@ export default class Page {
   }
 
   async navigateTo(url: string): Promise<void> {
-    if (!this._puppeteerPage) {
-      return;
-    }
     logger.info('navigateTo', url);
 
     // Check if URL is allowed
     if (!isUrlAllowed(url, this._config.allowedUrls, this._config.deniedUrls)) {
       throw new URLNotAllowedError(`URL: ${url} is not allowed`);
+    }
+
+    // Firefox doesn't support chrome.debugger API, use chrome.tabs.update instead
+    if (isFirefox) {
+      try {
+        // Update the tab URL directly using tabs API
+        await chrome.tabs.update(this._tabId, { url });
+        // Wait for the page to load
+        await this.waitForPageAndFramesLoad();
+        logger.info('navigateTo complete (Firefox mode)');
+        return;
+      } catch (error) {
+        if (error instanceof URLNotAllowedError) {
+          throw error;
+        }
+        if (error instanceof Error && error.message.includes('timeout')) {
+          logger.warning('Navigation timeout, but page might still be usable:', error);
+          return;
+        }
+        logger.error('Navigation failed:', error);
+        throw error;
+      }
+    }
+
+    // Chrome: Use Puppeteer
+    if (!this._puppeteerPage) {
+      return;
     }
 
     try {
@@ -527,6 +613,27 @@ export default class Page {
   }
 
   async refreshPage(): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use chrome.tabs.reload instead
+    if (isFirefox) {
+      try {
+        await chrome.tabs.reload(this._tabId);
+        await this.waitForPageAndFramesLoad();
+        logger.info('Page refresh complete (Firefox mode)');
+        return;
+      } catch (error) {
+        if (error instanceof URLNotAllowedError) {
+          throw error;
+        }
+        if (error instanceof Error && error.message.includes('timeout')) {
+          logger.warning('Refresh timeout, but page might still be usable:', error);
+          return;
+        }
+        logger.error('Page refresh failed:', error);
+        throw error;
+      }
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) return;
 
     try {
@@ -548,6 +655,27 @@ export default class Page {
   }
 
   async goBack(): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use chrome.tabs.goBack instead
+    if (isFirefox) {
+      try {
+        await chrome.tabs.goBack(this._tabId);
+        await this.waitForPageAndFramesLoad();
+        logger.info('Navigation back completed (Firefox mode)');
+        return;
+      } catch (error) {
+        if (error instanceof URLNotAllowedError) {
+          throw error;
+        }
+        if (error instanceof Error && error.message.includes('timeout')) {
+          logger.warning('Back navigation timeout, but page might still be usable:', error);
+          return;
+        }
+        logger.error('Could not navigate back:', error);
+        throw error;
+      }
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) return;
 
     try {
@@ -569,6 +697,27 @@ export default class Page {
   }
 
   async goForward(): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use chrome.tabs.goForward instead
+    if (isFirefox) {
+      try {
+        await chrome.tabs.goForward(this._tabId);
+        await this.waitForPageAndFramesLoad();
+        logger.info('Navigation forward completed (Firefox mode)');
+        return;
+      } catch (error) {
+        if (error instanceof URLNotAllowedError) {
+          throw error;
+        }
+        if (error instanceof Error && error.message.includes('timeout')) {
+          logger.warning('Forward navigation timeout, but page might still be usable:', error);
+          return;
+        }
+        logger.error('Could not navigate forward:', error);
+        throw error;
+      }
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) return;
 
     try {
@@ -594,6 +743,53 @@ export default class Page {
   // if elementNode is provided, scroll to a percentage of the element
   // if elementNode is not provided, scroll to a percentage of the page
   async scrollToPercent(yPercent: number, elementNode?: DOMElementNode): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      if (!elementNode) {
+        // Scroll the whole page
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: percent => {
+            const scrollHeight = document.documentElement.scrollHeight;
+            const viewportHeight = window.visualViewport?.height || window.innerHeight;
+            const scrollTop = (scrollHeight - viewportHeight) * (percent / 100);
+            window.scrollTo({
+              top: scrollTop,
+              left: window.scrollX,
+              behavior: 'smooth',
+            });
+          },
+          args: [yPercent],
+        });
+      } else {
+        // Scroll specific element
+        const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: (selector, percent) => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) {
+              console.error('Element not found for scroll:', selector);
+              return;
+            }
+
+            const scrollHeight = element.scrollHeight;
+            const viewportHeight = element.clientHeight;
+            const scrollTop = (scrollHeight - viewportHeight) * (percent / 100);
+            element.scrollTo({
+              top: scrollTop,
+              left: element.scrollLeft,
+              behavior: 'smooth',
+            });
+          },
+          args: [cssSelector, yPercent],
+        });
+      }
+      logger.info('scrollToPercent complete (Firefox mode)', yPercent);
+      return;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }
@@ -634,6 +830,40 @@ export default class Page {
   }
 
   async scrollBy(y: number, elementNode?: DOMElementNode): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      if (!elementNode) {
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: scrollY => {
+            window.scrollBy({
+              top: scrollY,
+              left: 0,
+              behavior: 'smooth',
+            });
+          },
+          args: [y],
+        });
+      } else {
+        const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: (selector, scrollY) => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) return;
+            element.scrollBy({
+              top: scrollY,
+              left: 0,
+              behavior: 'smooth',
+            });
+          },
+          args: [cssSelector, y],
+        });
+      }
+      return;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }
@@ -667,6 +897,31 @@ export default class Page {
   }
 
   async scrollToPreviousPage(elementNode?: DOMElementNode): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      if (!elementNode) {
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: () => {
+            window.scrollBy(0, -(window.visualViewport?.height || window.innerHeight));
+          },
+        });
+      } else {
+        const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: selector => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) return;
+            element.scrollBy(0, -element.clientHeight);
+          },
+          args: [cssSelector],
+        });
+      }
+      return;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }
@@ -694,6 +949,31 @@ export default class Page {
   }
 
   async scrollToNextPage(elementNode?: DOMElementNode): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      if (!elementNode) {
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: () => {
+            window.scrollBy(0, window.visualViewport?.height || window.innerHeight);
+          },
+        });
+      } else {
+        const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: selector => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) return;
+            element.scrollBy(0, element.clientHeight);
+          },
+          args: [cssSelector],
+        });
+      }
+      return;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }
@@ -838,6 +1118,72 @@ export default class Page {
   }
 
   async scrollToText(text: string, nth: number = 1): Promise<boolean> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      try {
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: (searchText, nthOccurrence) => {
+            const lowerCaseText = searchText.toLowerCase();
+
+            // Find all elements containing the text using XPath
+            const xpath = `//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '${lowerCaseText}')]`;
+            const elements = [];
+            const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+
+            for (let i = 0; i < result.snapshotLength; i++) {
+              const el = result.snapshotItem(i);
+              if (el instanceof HTMLElement) {
+                const style = window.getComputedStyle(el);
+                const rect = el.getBoundingClientRect();
+                const isVisible =
+                  style.display !== 'none' &&
+                  style.visibility !== 'hidden' &&
+                  style.opacity !== '0' &&
+                  rect.width > 0 &&
+                  rect.height > 0;
+
+                if (isVisible) {
+                  elements.push(el);
+                }
+              }
+            }
+
+            // Select the nth occurrence (1-indexed)
+            if (elements.length >= nthOccurrence) {
+              const targetElement = elements[nthOccurrence - 1];
+              targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'center',
+              });
+              return { success: true, found: elements.length };
+            }
+
+            return {
+              success: false,
+              found: elements.length,
+              error: `Only found ${elements.length} occurrences, need ${nthOccurrence}`,
+            };
+          },
+          args: [text, nth],
+        });
+
+        const res = result[0]?.result as { success: boolean; found: number; error?: string } | undefined;
+        if (res?.success) {
+          logger.info('scrollToText complete (Firefox mode)', { text, nth, found: res.found });
+          return true;
+        }
+
+        logger.warning('scrollToText: element not found or not enough occurrences', res);
+        return false;
+      } catch (error) {
+        logger.error('scrollToText failed (Firefox mode):', error);
+        return false;
+      }
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }
@@ -1025,6 +1371,13 @@ export default class Page {
   }
 
   async locateElement(element: DOMElementNode): Promise<ElementHandle | null> {
+    // Firefox doesn't use ElementHandle - it uses scripting API with selectors directly
+    if (isFirefox) {
+      logger.debug('locateElement: Firefox uses scripting API with selectors, not ElementHandle');
+      return null;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       // throw new Error('Puppeteer page is not connected');
       logger.warning('Puppeteer is not connected');
@@ -1099,6 +1452,86 @@ export default class Page {
   }
 
   async inputTextElementNode(useVision: boolean, elementNode: DOMElementNode, text: string): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      try {
+        // Get the CSS selector for the element
+        const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
+
+        // Scroll element into view first
+        await this._scrollElementIntoViewFirefox(cssSelector);
+
+        // Input text using scripting API
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: (selector, inputText) => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) {
+              return { success: false, error: 'Element not found' };
+            }
+
+            // Check if element is visible and enabled
+            const style = window.getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+              return { success: false, error: 'Element is hidden' };
+            }
+
+            // Determine element type and input method
+            const tagName = element.tagName.toLowerCase();
+            const isContentEditable = element.isContentEditable;
+            const isReadOnly =
+              element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element.readOnly : false;
+            const isDisabled =
+              element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element.disabled : false;
+
+            if (isReadOnly || isDisabled) {
+              return { success: false, error: 'Element is read-only or disabled' };
+            }
+
+            // Clear and set value
+            if (isContentEditable || tagName === 'input' || tagName === 'textarea') {
+              if (isContentEditable) {
+                element.textContent = '';
+              } else if ('value' in element) {
+                (element as HTMLInputElement).value = '';
+              }
+
+              // Set the value
+              if (isContentEditable) {
+                element.textContent = inputText;
+              } else if ('value' in element) {
+                (element as HTMLInputElement).value = inputText;
+              }
+
+              // Dispatch events
+              element.dispatchEvent(new Event('input', { bubbles: true }));
+              element.dispatchEvent(new Event('change', { bubbles: true }));
+
+              return { success: true };
+            }
+
+            return { success: false, error: 'Element does not support text input' };
+          },
+          args: [cssSelector, text],
+        });
+
+        if (!result[0]?.result?.success) {
+          throw new Error(result[0]?.result?.error || 'Input text failed');
+        }
+
+        // Wait for page stability after input
+        await this.waitForPageAndFramesLoad();
+
+        logger.info('inputTextElementNode complete (Firefox mode)', cssSelector);
+      } catch (error) {
+        const errorMsg = `Failed to input text into element: ${elementNode}. Error: ${error instanceof Error ? error.message : String(error)}`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+      return;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }
@@ -1282,7 +1715,132 @@ export default class Page {
     }
   }
 
+  /**
+   * Firefox-specific: Scroll element into view using scripting API
+   * @param cssSelector - CSS selector for the element to scroll into view
+   * @param timeout - Timeout in milliseconds
+   */
+  private async _scrollElementIntoViewFirefox(cssSelector: string, timeout = 1000): Promise<void> {
+    const startTime = Date.now();
+
+    while (true) {
+      try {
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: selector => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) {
+              return { success: false, error: 'Element not found', isVisible: false };
+            }
+
+            const rect = element.getBoundingClientRect();
+
+            // Check if element has size
+            if (rect.width === 0 || rect.height === 0) {
+              return { success: false, error: 'Element has no size', isVisible: false };
+            }
+
+            // Check if element is hidden
+            const style = window.getComputedStyle(element);
+            if (style.visibility === 'hidden' || style.display === 'none' || style.opacity === '0') {
+              return { success: false, error: 'Element is hidden', isVisible: false };
+            }
+
+            // Check if element is in viewport
+            const isInViewport =
+              rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+              rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+            if (!isInViewport) {
+              // Scroll into view
+              element.scrollIntoView({
+                behavior: 'auto',
+                block: 'center',
+                inline: 'center',
+              });
+              return { success: false, error: 'Scrolled into view', isVisible: false };
+            }
+
+            return { success: true, isVisible: true };
+          },
+          args: [cssSelector],
+        });
+
+        const res = result[0]?.result;
+        if (res?.success || res?.error === 'Element not found') {
+          break;
+        }
+      } catch (error) {
+        logger.warning('Error scrolling element into view (Firefox):', error);
+        break;
+      }
+
+      // Check timeout
+      if (Date.now() - startTime > timeout) {
+        logger.warning('Timed out while trying to scroll element into view (Firefox), continuing anyway');
+        break;
+      }
+
+      // Small delay before next check
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
   async clickElementNode(useVision: boolean, elementNode: DOMElementNode): Promise<void> {
+    // Firefox doesn't support chrome.debugger API, use scripting API instead
+    if (isFirefox) {
+      try {
+        // Get the CSS selector for the element
+        const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
+
+        // Scroll element into view first
+        await this._scrollElementIntoViewFirefox(cssSelector);
+
+        // Click the element using scripting API
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: selector => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (!element) {
+              return { success: false, error: 'Element not found' };
+            }
+
+            // Check if element is visible and enabled
+            const style = window.getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+              return { success: false, error: 'Element is hidden' };
+            }
+
+            // Try native click first
+            element.click();
+            return { success: true };
+          },
+          args: [cssSelector],
+        });
+
+        if (!result[0]?.result?.success) {
+          throw new Error(result[0]?.result?.error || 'Click failed');
+        }
+
+        // Wait for potential navigation
+        await this.waitForPageAndFramesLoad();
+        await this._checkAndHandleNavigation();
+
+        logger.info('clickElementNode complete (Firefox mode)', cssSelector);
+      } catch (error) {
+        if (error instanceof URLNotAllowedError) {
+          throw error;
+        }
+        throw new Error(
+          `Failed to click element: ${elementNode}. Error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      return;
+    }
+
+    // Chrome: Use Puppeteer
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer is not connected');
     }

@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension",
-  "version": "0.1.13",
+  "version": "0.2.2",
   "description": "chrome extension - core settings",
   "type": "module",
   "scripts": {
@@ -23,7 +23,7 @@
     "@langchain/cerebras": "0.0.4",
     "@langchain/core": "0.3.79",
     "@langchain/deepseek": "0.1.0",
-    "@langchain/google-genai": "0.2.18",
+    "@langchain/google-genai": "0.2.28",
     "@langchain/groq": "0.2.4",
     "@langchain/ollama": "0.2.4",
     "@langchain/openai": "0.6.16",

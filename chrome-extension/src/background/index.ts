@@ -21,34 +21,55 @@ import { analytics } from './services/analytics';
 
 const logger = createLogger('background');
 
+// Detect if running in Firefox using webextension-polyfill's browser object
+// @ts-ignore - browser is provided by webextension-polyfill
+const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id;
+
 const browserContext = new BrowserContext({});
 let currentExecutor: Executor | null = null;
-let currentPort: chrome.runtime.Port | null = null;
-const SIDE_PANEL_URL = chrome.runtime.getURL('side-panel/index.html');
+// @ts-ignore - browser is provided by webextension-polyfill
+let currentPort: browser.runtime.Port | null = null;
+// @ts-ignore - browser is provided by webextension-polyfill
+const SIDE_PANEL_URL = browser.runtime.getURL('side-panel/index.html');
 
-// Setup side panel behavior
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(error => console.error(error));
+// Setup sidebar/side panel behavior based on browser
+if (isFirefox) {
+  // Firefox uses sidebar_action API
+  logger.info('Firefox detected - using sidebar_action');
+} else {
+  // Chrome uses sidePanel API
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(error => console.error(error));
+  logger.info('Chrome detected - using sidePanel');
+}
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (tabId && changeInfo.status === 'complete' && tab.url?.startsWith('http')) {
-    await injectBuildDomTreeScripts(tabId);
-  }
-});
-
-// Listen for debugger detached event
-// if canceled_by_user, remove the tab from the browser context
-chrome.debugger.onDetach.addListener(async (source, reason) => {
-  console.log('Debugger detached:', source, reason);
-  if (reason === 'canceled_by_user') {
-    if (source.tabId) {
-      currentExecutor?.cancel();
-      await browserContext.cleanup();
+// @ts-ignore - browser is provided by webextension-polyfill
+browser.tabs.onUpdated.addListener(
+  async (tabId: number, changeInfo: browser.tabs.TabChangeInfo, tab: browser.tabs.Tab) => {
+    if (tabId && changeInfo.status === 'complete' && tab.url?.startsWith('http')) {
+      await injectBuildDomTreeScripts(tabId);
     }
-  }
-});
+  },
+);
+
+// Firefox doesn't support chrome.debugger API
+// Only add debugger listener for Chrome
+if (!isFirefox) {
+  // Listen for debugger detached event
+  // if canceled_by_user, remove the tab from the browser context
+  chrome.debugger.onDetach.addListener(async (source, reason) => {
+    console.log('Debugger detached:', source, reason);
+    if (reason === 'canceled_by_user') {
+      if (source.tabId) {
+        currentExecutor?.cancel();
+        await browserContext.cleanup();
+      }
+    }
+  });
+}
 
 // Cleanup when tab is closed
-chrome.tabs.onRemoved.addListener(tabId => {
+// @ts-ignore - browser is provided by webextension-polyfill
+browser.tabs.onRemoved.addListener((tabId: number) => {
   browserContext.removeAttachedPage(tabId);
 });
 
@@ -67,19 +88,22 @@ analyticsSettingsStore.subscribe(() => {
 });
 
 // Listen for simple messages (e.g., from options page)
-chrome.runtime.onMessage.addListener(() => {
+// @ts-ignore - browser is provided by webextension-polyfill
+browser.runtime.onMessage.addListener(() => {
   // Handle other message types if needed in the future
   // Return false if response is not sent asynchronously
   // return false;
 });
 
 // Setup connection listener for long-lived connections (e.g., side panel)
-chrome.runtime.onConnect.addListener(port => {
+// @ts-ignore - browser is provided by webextension-polyfill
+browser.runtime.onConnect.addListener((port: browser.runtime.Port) => {
   if (port.name === 'side-panel-connection') {
     const senderUrl = port.sender?.url;
     const senderId = port.sender?.id;
 
-    if (!senderUrl || senderId !== chrome.runtime.id || senderUrl !== SIDE_PANEL_URL) {
+    // @ts-ignore - browser is provided by webextension-polyfill
+    if (!senderUrl || senderId !== browser.runtime.id || senderUrl !== SIDE_PANEL_URL) {
       logger.warning('Blocked unauthorized side-panel-connection', senderId, senderUrl);
       port.disconnect();
       return;
@@ -87,7 +111,7 @@ chrome.runtime.onConnect.addListener(port => {
 
     currentPort = port;
 
-    port.onMessage.addListener(async message => {
+    port.onMessage.addListener(async (message: any) => {
       try {
         switch (message.type) {
           case 'heartbeat':
