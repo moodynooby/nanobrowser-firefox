@@ -18,7 +18,7 @@ function withFirefoxSidebar(manifest) {
     sidebar_action: {
       default_panel: 'side-panel/index.html',
       default_title: 'Nanobrowser',
-      default_icon: 'icon-32.png',
+      default_icon: 'icon.svg',
       open_at_install: true,
     },
     // Firefox-specific settings
@@ -65,7 +65,10 @@ function withOperaSidebar(manifest) {
     sidebar_action: {
       default_panel: 'side-panel/index.html',
       default_title: 'Nanobrowser',
-      default_icon: 'icon-32.png',
+      default_icon: {
+        16: 'icon-32.png',
+        32: 'icon-32.png',
+      },
     },
   });
 }
@@ -136,6 +139,8 @@ const manifest = withDataCollectionPermissions(
           },
           icons: {
             128: 'icon-128.png',
+            32: 'icon-32.png',
+            16: 'icon-32.png',
           },
           content_scripts: [
             {
@@ -152,6 +157,7 @@ const manifest = withDataCollectionPermissions(
                 '*.svg',
                 'icon-128.png',
                 'icon-32.png',
+                'icon.svg',
                 'permission/index.html',
                 'permission/permission.js',
               ],
