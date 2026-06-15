@@ -475,7 +475,7 @@ export default class Page {
         });
 
         // Capture the visible tab
-        const dataUrl = await chrome.tabs.captureVisibleTab(null, {
+        const dataUrl = await chrome.tabs.captureVisibleTab({
           format: 'jpeg',
           quality: 80,
         });
@@ -766,7 +766,7 @@ export default class Page {
         const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
         await chrome.scripting.executeScript({
           target: { tabId: this._tabId },
-          func: (selector, percent) => {
+          func: (selector: string, percent: number) => {
             const element = document.querySelector(selector) as HTMLElement | null;
             if (!element) {
               console.error('Element not found for scroll:', selector);
@@ -848,7 +848,7 @@ export default class Page {
         const cssSelector = elementNode.enhancedCssSelectorForElement(this._config.includeDynamicAttributes);
         await chrome.scripting.executeScript({
           target: { tabId: this._tabId },
-          func: (selector, scrollY) => {
+          func: (selector: string, scrollY: number) => {
             const element = document.querySelector(selector) as HTMLElement | null;
             if (!element) return;
             element.scrollBy({
@@ -1123,7 +1123,7 @@ export default class Page {
       try {
         const result = await chrome.scripting.executeScript({
           target: { tabId: this._tabId },
-          func: (searchText, nthOccurrence) => {
+          func: (searchText: string, nthOccurrence: number) => {
             const lowerCaseText = searchText.toLowerCase();
 
             // Find all elements containing the text using XPath

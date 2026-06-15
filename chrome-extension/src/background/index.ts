@@ -44,6 +44,7 @@ if (isFirefox) {
 
 // @ts-ignore - browser is provided by webextension-polyfill
 browser.tabs.onUpdated.addListener(
+  // @ts-ignore - browser.tabs types not available from webextension-polyfill
   async (tabId: number, changeInfo: browser.tabs.TabChangeInfo, tab: browser.tabs.Tab) => {
     if (tabId && changeInfo.status === 'complete' && tab.url?.startsWith('http')) {
       await injectBuildDomTreeScripts(tabId);

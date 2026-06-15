@@ -90,7 +90,7 @@ export const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({ isDarkMode
               <label
                 htmlFor="analytics-enabled"
                 className={`text-base font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                Help improve Nanobrowser
+                Usage Analytics
               </label>
               <div className="relative inline-block w-12 select-none">
                 <input
@@ -115,7 +115,7 @@ export const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({ isDarkMode
               </div>
             </div>
             <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Share anonymous usage data to help us improve the extension
+              Share anonymous usage data
             </p>
           </div>
 
@@ -150,9 +150,7 @@ export const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({ isDarkMode
           {!settings.enabled && (
             <div
               className={`rounded-md border p-4 ${isDarkMode ? 'border-yellow-700 bg-yellow-900/20' : 'border-yellow-200 bg-yellow-50'}`}>
-              <p className={`text-sm ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
-                Analytics disabled. You can re-enable it anytime to help improve Nanobrowser.
-              </p>
+              <p className={`text-sm ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>Analytics disabled.</p>
             </div>
           )}
         </div>

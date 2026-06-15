@@ -8,9 +8,10 @@
     "dist/**"
   ],
   "scripts": {
-    "clean:node_modules": "pnpx rimraf node_modules",
+    "clean:bundle": "rimraf dist",
+    "clean:node_modules": "rimraf node_modules",
     "clean:turbo": "rimraf .turbo",
-    "clean": "pnpm clean:turbo && pnpm clean:node_modules",
+    "clean": "pnpm clean:bundle && pnpm clean:turbo && pnpm clean:node_modules",
     "build": "vite build",
     "dev": "cross-env __DEV__=true vite build --mode development",
     "lint": "eslint . --ext .ts,.tsx",
@@ -19,6 +20,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "@extension/shared": "workspace:*",
     "@extension/storage": "workspace:*",
     "@extension/ui": "workspace:*",
@@ -29,8 +32,7 @@
     "@extension/tailwindcss-config": "workspace:*",
     "@extension/tsconfig": "workspace:*",
     "@extension/vite-config": "workspace:*",
-    "postcss-load-config": "^6.0.1",
-    "cross-env": "^7.0.3"
+    "postcss-load-config": "^6.0.1"
   },
   "postcss": {
     "plugins": {

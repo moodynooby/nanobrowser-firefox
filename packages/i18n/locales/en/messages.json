@@ -1,11 +1,11 @@
 {
   "app_metadata_description": {
     "description": "Extension description",
-    "message": "Automate web tasks with AI! NanoBrowser is an open-source browser extension that lets you extract data, fill forms, and more."
+    "message": "AI-powered web automation extension"
   },
   "app_metadata_name": {
     "description": "Extension name",
-    "message": "Nanobrowser: AI Web Agent & Automation"
+    "message": "Nanobrowser"
   },
   "errors_unknown": {
     "message": "Unknown error occurred"
@@ -38,7 +38,7 @@
     "message": "Back to chat"
   },
   "welcome_title": {
-    "message": "Welcome to Nanobrowser!"
+    "message": "Welcome"
   },
   "welcome_instruction": {
     "message": "To get started, please configure your API keys in the settings page."
@@ -48,9 +48,6 @@
   },
   "welcome_quickStart": {
     "message": "Quick Start Guide"
-  },
-  "welcome_joinCommunity": {
-    "message": "Join Our Community"
   },
   "status_checkingConfig": {
     "message": "Checking configuration..."
@@ -167,7 +164,7 @@
     "message": "Enable Voice Input"
   },
   "permissions_microphone_description": {
-    "message": "Nanobrowser needs microphone access to convert your speech to text."
+    "message": "Microphone access is needed for speech-to-text"
   },
   "permissions_microphone_grantButton": {
     "message": "Grant Microphone Permission"

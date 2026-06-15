@@ -8,9 +8,10 @@
     "dist/**"
   ],
   "scripts": {
-    "clean:node_modules": "pnpx rimraf node_modules",
+    "clean:bundle": "rimraf dist",
+    "clean:node_modules": "rimraf node_modules",
     "clean:turbo": "rimraf .turbo",
-    "clean": "pnpm clean:turbo && pnpm clean:node_modules",
+    "clean": "pnpm clean:bundle && pnpm clean:turbo && pnpm clean:node_modules",
     "build": "vite build",
     "dev": "cross-env __DEV__=true vite build --mode development",
     "lint": "eslint . --ext .ts,.tsx",
@@ -25,7 +26,6 @@
   "devDependencies": {
     "@extension/hmr": "workspace:*",
     "@extension/tsconfig": "workspace:*",
-    "@extension/vite-config": "workspace:*",
-    "cross-env": "^7.0.3"
+    "@extension/vite-config": "workspace:*"
   }
 }
