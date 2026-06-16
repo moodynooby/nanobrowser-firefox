@@ -31,9 +31,6 @@
     "lint:fix": {
       "cache": false
     },
-    "prettier": {
-      "cache": false
-    },
     "clean:node_modules": {
       "dependsOn": ["^clean:node_modules"],
       "cache": false

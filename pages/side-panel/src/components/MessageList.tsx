@@ -1,6 +1,6 @@
 import type { Message } from '@extension/storage';
-import { ACTOR_PROFILES } from '../types/message';
 import { memo } from 'react';
+import { ACTOR_PROFILES } from '../types/message';
 
 interface MessageListProps {
   messages: Message[];
@@ -42,11 +42,13 @@ function MessageBlock({ message, isSameActor, isDarkMode = false }: MessageBlock
         !isSameActor
           ? `mt-4 border-t ${isDarkMode ? 'border-sky-800/50' : 'border-sky-200/50'} pt-4 first:mt-0 first:border-t-0 first:pt-0`
           : ''
-      }`}>
+      }`}
+    >
       {!isSameActor && (
         <div
           className="flex size-8 shrink-0 items-center justify-center rounded-full"
-          style={{ backgroundColor: actor.iconBackground }}>
+          style={{ backgroundColor: actor.iconBackground }}
+        >
           <img src={actor.icon} alt={actor.name} className="size-6" />
         </div>
       )}

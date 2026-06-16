@@ -1,12 +1,17 @@
-import { z } from 'zod';
-import { BaseAgent, type BaseAgentOptions, type ExtraAgentOptions } from './base';
+import { type BaseMessage, HumanMessage } from '@langchain/core/messages';
+import { HistoryTreeProcessor } from '@src/background/browser/dom/history/service';
+import { type DOMHistoryElement } from '@src/background/browser/dom/history/view';
+import { calcBranchPathHashSet } from '@src/background/browser/dom/views';
+import { type BrowserState, BrowserStateHistory, URLNotAllowedError } from '@src/background/browser/views';
 import { createLogger } from '@src/background/log';
-import { ActionResult, type AgentOutput } from '../types';
+import { convertZodToJsonSchema, repairJsonString } from '@src/background/utils';
+import { z } from 'zod';
 import type { Action } from '../actions/builder';
 import { buildDynamicActionSchema } from '../actions/builder';
-import { agentBrainSchema } from '../types';
-import { type BaseMessage, HumanMessage } from '@langchain/core/messages';
 import { Actors, ExecutionState } from '../event/types';
+import { AgentStepRecord } from '../history';
+import { ActionResult, type AgentOutput, agentBrainSchema } from '../types';
+import { BaseAgent, type BaseAgentOptions, type ExtraAgentOptions } from './base';
 import {
   ChatModelAuthError,
   ChatModelBadRequestError,
@@ -18,16 +23,10 @@ import {
   isBadRequestError,
   isExtensionConflictError,
   isForbiddenError,
-  ResponseParseError,
   LLM_FORBIDDEN_ERROR_MESSAGE,
   RequestCancelledError,
+  ResponseParseError,
 } from './errors';
-import { calcBranchPathHashSet } from '@src/background/browser/dom/views';
-import { type BrowserState, BrowserStateHistory, URLNotAllowedError } from '@src/background/browser/views';
-import { convertZodToJsonSchema, repairJsonString } from '@src/background/utils';
-import { HistoryTreeProcessor } from '@src/background/browser/dom/history/service';
-import { AgentStepRecord } from '../history';
-import { type DOMHistoryElement } from '@src/background/browser/dom/history/view';
 
 const logger = createLogger('NavigatorAgent');
 

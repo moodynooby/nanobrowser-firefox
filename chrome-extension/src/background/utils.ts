@@ -1,6 +1,6 @@
-import type { z } from 'zod';
-import { jsonrepair } from 'jsonrepair';
 import { createLogger } from '@src/background/log';
+import { jsonrepair } from 'jsonrepair';
+import type { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
 const logger = createLogger('Utils');

@@ -3,10 +3,10 @@
  * Provides content sanitization and basic security checks
  */
 
-import { sanitizeContent, detectThreats, cleanEmptyTags } from './sanitizer';
+import { createLogger } from '@src/background/log';
+import { cleanEmptyTags, detectThreats, sanitizeContent } from './sanitizer';
 import type { SanitizationResult, ValidationResult } from './types';
 import { ThreatType } from './types';
-import { createLogger } from '@src/background/log';
 
 const logger = createLogger('SecurityGuardrails');
 
@@ -167,10 +167,10 @@ export class SecurityGuardrails {
   }
 }
 
-// Export everything for direct use
-export * from './types';
 export * from './patterns';
 export * from './sanitizer';
+// Export everything for direct use
+export * from './types';
 
 // Create a default instance
 export const guardrails = new SecurityGuardrails();

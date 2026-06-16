@@ -1,12 +1,12 @@
 import { createStorage } from '../base/base';
 import { StorageEnum } from '../base/enums';
 import type {
-  ChatSession,
-  ChatMessage,
-  ChatHistoryStorage,
-  Message,
-  ChatSessionMetadata,
   ChatAgentStepHistory,
+  ChatHistoryStorage,
+  ChatMessage,
+  ChatSession,
+  ChatSessionMetadata,
+  Message,
 } from './types';
 
 // Key for storing chat session metadata

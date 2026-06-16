@@ -1,4 +1,4 @@
-import { type BaseMessage, AIMessage, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
+import { AIMessage, type BaseMessage, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
 
 import { guardrails } from '@src/background/services/guardrails';
 import { ResponseParseError } from '../agents/errors';

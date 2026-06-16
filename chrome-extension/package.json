@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "chrome extension - core settings",
   "type": "module",
   "scripts": {
@@ -11,9 +11,8 @@
     "build": "vite build",
     "dev": "cross-env __DEV__=true vite build --mode development",
     "test": "pnpm vitest run",
-    "lint": "eslint ./ --ext .ts,.js,.tsx,.jsx",
-    "lint:fix": "pnpm lint --fix",
-    "prettier": "prettier . --write --ignore-path ../.prettierignore",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

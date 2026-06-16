@@ -1,4 +1,7 @@
 import 'webextension-polyfill';
+import { createLogger } from '@src/background/log';
+import Page, { build_initial_state } from './page';
+import { isUrlAllowed } from './util';
 import {
   type BrowserContextConfig,
   type BrowserState,
@@ -6,9 +9,6 @@ import {
   type TabInfo,
   URLNotAllowedError,
 } from './views';
-import Page, { build_initial_state } from './page';
-import { createLogger } from '@src/background/log';
-import { isUrlAllowed } from './util';
 
 const logger = createLogger('BrowserContext');
 export default class BrowserContext {

@@ -1,13 +1,13 @@
-import type { z } from 'zod';
+import { ProviderTypeEnum } from '@extension/storage';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import type { AgentContext, AgentOutput } from '../types';
-import type { BasePrompt } from '../prompts/base';
 import type { BaseMessage } from '@langchain/core/messages';
 import { createLogger } from '@src/background/log';
+import type { z } from 'zod';
 import type { Action } from '../actions/builder';
 import { convertInputMessages, extractJsonFromModelOutput, removeThinkTags } from '../messages/utils';
+import type { BasePrompt } from '../prompts/base';
+import type { AgentContext, AgentOutput } from '../types';
 import { isAbortedError, ResponseParseError } from './errors';
-import { ProviderTypeEnum } from '@extension/storage';
 
 const logger = createLogger('agent');
 

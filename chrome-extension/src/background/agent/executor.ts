@@ -1,28 +1,28 @@
-import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { type ActionResult, AgentContext, type AgentOptions, type AgentOutput } from './types';
 import { t } from '@extension/i18n';
-import { NavigatorAgent, NavigatorActionRegistry } from './agents/navigator';
-import { PlannerAgent, type PlannerOutput } from './agents/planner';
-import { NavigatorPrompt } from './prompts/navigator';
-import { PlannerPrompt } from './prompts/planner';
+import type { GeneralSettingsConfig } from '@extension/storage';
+import { chatHistoryStore } from '@extension/storage/lib/chat';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { createLogger } from '@src/background/log';
-import MessageManager from './messages/service';
 import type BrowserContext from '../browser/context';
+import { URLNotAllowedError } from '../browser/views';
 import { ActionBuilder } from './actions/builder';
-import { EventManager } from './event/manager';
-import { Actors, type EventCallback, EventType, ExecutionState } from './event/types';
 import {
   ChatModelAuthError,
   ChatModelBadRequestError,
   ChatModelForbiddenError,
   ExtensionConflictError,
-  RequestCancelledError,
   MaxFailuresReachedError,
+  RequestCancelledError,
 } from './agents/errors';
-import { URLNotAllowedError } from '../browser/views';
-import { chatHistoryStore } from '@extension/storage/lib/chat';
+import { NavigatorActionRegistry, NavigatorAgent } from './agents/navigator';
+import { PlannerAgent, type PlannerOutput } from './agents/planner';
+import { EventManager } from './event/manager';
+import { Actors, type EventCallback, EventType, ExecutionState } from './event/types';
 import type { AgentStepHistory } from './history';
-import type { GeneralSettingsConfig } from '@extension/storage';
+import MessageManager from './messages/service';
+import { NavigatorPrompt } from './prompts/navigator';
+import { PlannerPrompt } from './prompts/planner';
+import { type ActionResult, AgentContext, type AgentOptions, type AgentOutput } from './types';
 
 const logger = createLogger('Executor');
 

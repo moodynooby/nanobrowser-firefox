@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { guardrails, ThreatType, sanitizeContent, cleanEmptyTags } from '../index';
+import { describe, expect, it } from 'vitest';
 import {
   filterExternalContent,
   filterExternalContentWithReport,
   wrapUntrustedContent,
 } from '../../../agent/messages/utils';
+import { cleanEmptyTags, guardrails, sanitizeContent, ThreatType } from '../index';
 
 describe('Security Guardrails - Sanitizer', () => {
   it('normalizes and detects task override with zero-width characters', () => {

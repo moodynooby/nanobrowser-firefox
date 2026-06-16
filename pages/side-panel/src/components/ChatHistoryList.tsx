@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
-import { FaTrash } from 'react-icons/fa';
-import { BsBookmark } from 'react-icons/bs';
+
 import { t } from '@extension/i18n';
+import { BsBookmark } from 'react-icons/bs';
+import { FaTrash } from 'react-icons/fa';
 
 interface ChatSession {
   id: string;
@@ -40,7 +41,8 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
       </h2>
       {sessions.length === 0 ? (
         <div
-          className={`rounded-lg ${isDarkMode ? 'bg-slate-800 text-gray-400' : 'bg-white/30 text-gray-500'} p-4 text-center backdrop-blur-sm`}>
+          className={`rounded-lg ${isDarkMode ? 'bg-slate-800 text-gray-400' : 'bg-white/30 text-gray-500'} p-4 text-center backdrop-blur-sm`}
+        >
           {t('chat_history_empty')}
         </div>
       ) : (
@@ -50,7 +52,8 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
               key={session.id}
               className={`group relative rounded-lg ${
                 isDarkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white/50 hover:bg-white/70'
-              } p-3 backdrop-blur-sm transition-all`}>
+              } p-3 backdrop-blur-sm transition-all`}
+            >
               <button onClick={() => onSessionSelect(session.id)} className="w-full text-left" type="button">
                 <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                   {session.title}
@@ -73,7 +76,8 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
                       : 'bg-white text-sky-500 hover:bg-gray-100'
                   }`}
                   aria-label={t('chat_history_bookmark')}
-                  type="button">
+                  type="button"
+                >
                   <BsBookmark size={14} />
                 </button>
               )}
@@ -90,7 +94,8 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
                     : 'bg-white text-gray-500 hover:bg-gray-100'
                 }`}
                 aria-label={t('chat_history_delete')}
-                type="button">
+                type="button"
+              >
                 <FaTrash size={14} />
               </button>
             </div>

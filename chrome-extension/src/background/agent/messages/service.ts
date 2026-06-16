@@ -1,12 +1,12 @@
-import { type BaseMessage, AIMessage, HumanMessage, type SystemMessage, ToolMessage } from '@langchain/core/messages';
-import { MessageHistory, MessageMetadata } from '@src/background/agent/messages/views';
-import { createLogger } from '@src/background/log';
+import { AIMessage, type BaseMessage, HumanMessage, type SystemMessage, ToolMessage } from '@langchain/core/messages';
 import {
   filterExternalContent,
-  wrapUserRequest,
   splitUserTextAndAttachments,
   wrapAttachments,
+  wrapUserRequest,
 } from '@src/background/agent/messages/utils';
+import { MessageHistory, MessageMetadata } from '@src/background/agent/messages/views';
+import { createLogger } from '@src/background/log';
 
 const logger = createLogger('MessageManager');
 

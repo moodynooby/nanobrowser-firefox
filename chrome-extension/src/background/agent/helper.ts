@@ -1,13 +1,13 @@
-import { type ProviderConfig, type ModelConfig, ProviderTypeEnum } from '@extension/storage';
-import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
+import { type ModelConfig, type ProviderConfig, ProviderTypeEnum } from '@extension/storage';
 import { ChatAnthropic } from '@langchain/anthropic';
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { ChatXAI } from '@langchain/xai';
-import { ChatGroq } from '@langchain/groq';
 import { ChatCerebras } from '@langchain/cerebras';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { ChatOllama } from '@langchain/ollama';
 import { ChatDeepSeek } from '@langchain/deepseek';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGroq } from '@langchain/groq';
+import { ChatOllama } from '@langchain/ollama';
+import { AzureChatOpenAI, ChatOpenAI } from '@langchain/openai';
+import { ChatXAI } from '@langchain/xai';
 
 const maxTokens = 1024 * 4;
 

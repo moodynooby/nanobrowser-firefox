@@ -1,5 +1,5 @@
-import type { ActionResult, StepMetadata } from './types';
 import type { BrowserStateHistory } from '../browser/views';
+import type { ActionResult, StepMetadata } from './types';
 
 export class AgentStepRecord {
   modelOutput: string | null;

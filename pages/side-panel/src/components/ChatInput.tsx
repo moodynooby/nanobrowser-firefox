@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { FaMicrophone } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { t } from '@extension/i18n';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { FaMicrophone } from 'react-icons/fa';
 
 interface ChatInputProps {
   onSendMessage: (text: string, displayText?: string) => void;
@@ -186,20 +186,23 @@ export default function ChatInput({
     <form
       onSubmit={handleSubmit}
       className={`overflow-hidden rounded-lg border transition-colors ${disabled ? 'cursor-not-allowed' : 'focus-within:border-sky-400 hover:border-sky-400'} ${isDarkMode ? 'border-slate-700' : ''}`}
-      aria-label={t('chat_input_form')}>
+      aria-label={t('chat_input_form')}
+    >
       <div className="flex flex-col">
         {/* File attachments display */}
         {attachedFiles.length > 0 && (
           <div
             className={`flex flex-wrap gap-2 border-b p-2 ${
               isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-gray-200 bg-gray-50'
-            }`}>
+            }`}
+          >
             {attachedFiles.map((file, index) => (
               <div
                 key={index}
                 className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs ${
                   isDarkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                }`}>
+                }`}
+              >
                 <span className="text-xs">📎</span>
                 <span className="max-w-[150px] truncate">{file.name}</span>
                 <button
@@ -208,7 +211,8 @@ export default function ChatInput({
                   className={`ml-1 rounded-sm transition-colors ${
                     isDarkMode ? 'hover:bg-slate-600' : 'hover:bg-gray-300'
                   }`}
-                  aria-label={`Remove ${file.name}`}>
+                  aria-label={`Remove ${file.name}`}
+                >
                   <span className="text-xs">✕</span>
                 </button>
               </div>
@@ -240,7 +244,8 @@ export default function ChatInput({
         <div
           className={`flex items-center justify-between px-2 py-1.5 ${
             disabled ? (isDarkMode ? 'bg-slate-800' : 'bg-gray-100') : isDarkMode ? 'bg-slate-800' : 'bg-white'
-          }`}>
+          }`}
+        >
           <div className="flex gap-2 text-gray-500">
             {/* File attachment button */}
             <button
@@ -255,7 +260,8 @@ export default function ChatInput({
                   : isDarkMode
                     ? 'text-gray-400 hover:bg-slate-700 hover:text-gray-200'
                     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-              }`}>
+              }`}
+            >
               <span className="text-lg">📎</span>
             </button>
 
@@ -290,7 +296,8 @@ export default function ChatInput({
                       : isDarkMode
                         ? 'text-gray-400 hover:bg-slate-700 hover:text-gray-200'
                         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                }`}>
+                }`}
+              >
                 {isProcessingSpeech ? (
                   <AiOutlineLoading3Quarters className="size-4 animate-spin" />
                 ) : (
@@ -304,7 +311,8 @@ export default function ChatInput({
             <button
               type="button"
               onClick={onStopTask}
-              className="rounded-md bg-red-500 px-3 py-1 text-white transition-colors hover:bg-red-600">
+              className="rounded-md bg-red-500 px-3 py-1 text-white transition-colors hover:bg-red-600"
+            >
               {t('chat_buttons_stop')}
             </button>
           ) : historicalSessionId ? (
@@ -313,7 +321,8 @@ export default function ChatInput({
               onClick={handleReplay}
               disabled={!historicalSessionId}
               aria-disabled={!historicalSessionId}
-              className={`rounded-md bg-green-500 px-3 py-1 text-white transition-colors hover:enabled:bg-green-600 ${!historicalSessionId ? 'cursor-not-allowed opacity-50' : ''}`}>
+              className={`rounded-md bg-green-500 px-3 py-1 text-white transition-colors hover:enabled:bg-green-600 ${!historicalSessionId ? 'cursor-not-allowed opacity-50' : ''}`}
+            >
               {t('chat_buttons_replay')}
             </button>
           ) : (
@@ -321,7 +330,8 @@ export default function ChatInput({
               type="submit"
               disabled={isSendButtonDisabled}
               aria-disabled={isSendButtonDisabled}
-              className={`rounded-md bg-[#19C2FF] px-3 py-1 text-white transition-colors hover:enabled:bg-[#0073DC] ${isSendButtonDisabled ? 'cursor-not-allowed opacity-50' : ''}`}>
+              className={`rounded-md bg-[#19C2FF] px-3 py-1 text-white transition-colors hover:enabled:bg-[#0073DC] ${isSendButtonDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+            >
               {t('chat_buttons_send')}
             </button>
           )}

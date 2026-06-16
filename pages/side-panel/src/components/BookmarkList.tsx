@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
-import { useState, useRef, useEffect } from 'react';
-import { FaTrash, FaPen, FaCheck, FaTimes } from 'react-icons/fa';
+
 import { t } from '@extension/i18n';
+import { useEffect, useRef, useState } from 'react';
+import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 
 interface Bookmark {
   id: number;
@@ -96,7 +97,8 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
             onDrop={e => handleDrop(e, bookmark.id)}
             className={`group relative rounded-lg p-3 ${
               isDarkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-sky-50'
-            } border ${isDarkMode ? 'border-slate-700' : 'border-sky-100'}`}>
+            } border ${isDarkMode ? 'border-slate-700' : 'border-sky-100'}`}
+          >
             {editingId === bookmark.id ? (
               <div className="flex items-center">
                 <input
@@ -116,7 +118,8 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                       : 'bg-white text-green-500 hover:bg-gray-100'
                   }`}
                   aria-label={t('chat_bookmarks_saveEdit')}
-                  type="button">
+                  type="button"
+                >
                   <FaCheck size={14} />
                 </button>
                 <button
@@ -127,7 +130,8 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                       : 'bg-white text-red-500 hover:bg-gray-100'
                   }`}
                   aria-label={t('chat_bookmarks_cancelEdit')}
-                  type="button">
+                  type="button"
+                >
                   <FaTimes size={14} />
                 </button>
               </div>
@@ -142,9 +146,11 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                         onBookmarkSelect(bookmark.content);
                       }
                     }}
-                    className="w-full text-left">
+                    className="w-full text-left"
+                  >
                     <div
-                      className={`truncate pr-10 text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                      className={`truncate pr-10 text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}
+                    >
                       {bookmark.title}
                     </div>
                   </button>
@@ -166,7 +172,8 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                       : 'bg-white text-sky-500 hover:bg-gray-100'
                   }`}
                   aria-label={t('chat_bookmarks_edit')}
-                  type="button">
+                  type="button"
+                >
                   <FaPen size={14} />
                 </button>
 
@@ -184,7 +191,8 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                       : 'bg-white text-gray-500 hover:bg-gray-100'
                   }`}
                   aria-label={t('chat_bookmarks_delete')}
-                  type="button">
+                  type="button"
+                >
                   <FaTrash size={14} />
                 </button>
               </>

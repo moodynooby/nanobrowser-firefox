@@ -1,33 +1,33 @@
-import { ActionResult, type AgentContext } from '@src/background/agent/types';
 import { t } from '@extension/i18n';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ActionResult, type AgentContext } from '@src/background/agent/types';
+import { createLogger } from '@src/background/log';
+import { z } from 'zod';
+import { Actors, ExecutionState } from '../event/types';
+import { wrapUntrustedContent } from '../messages/utils';
 import {
+  type ActionSchema,
+  cacheContentActionSchema,
   clickElementActionSchema,
+  closeTabActionSchema,
   doneActionSchema,
+  getDropdownOptionsActionSchema,
   goBackActionSchema,
   goToUrlActionSchema,
   inputTextActionSchema,
-  openTabActionSchema,
-  searchGoogleActionSchema,
-  switchTabActionSchema,
-  type ActionSchema,
-  sendKeysActionSchema,
-  scrollToTextActionSchema,
-  cacheContentActionSchema,
-  selectDropdownOptionActionSchema,
-  getDropdownOptionsActionSchema,
-  closeTabActionSchema,
-  waitActionSchema,
-  previousPageActionSchema,
-  scrollToPercentActionSchema,
   nextPageActionSchema,
-  scrollToTopActionSchema,
+  openTabActionSchema,
+  previousPageActionSchema,
   scrollToBottomActionSchema,
+  scrollToPercentActionSchema,
+  scrollToTextActionSchema,
+  scrollToTopActionSchema,
+  searchGoogleActionSchema,
+  selectDropdownOptionActionSchema,
+  sendKeysActionSchema,
+  switchTabActionSchema,
+  waitActionSchema,
 } from './schemas';
-import { z } from 'zod';
-import { createLogger } from '@src/background/log';
-import { ExecutionState, Actors } from '../event/types';
-import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { wrapUntrustedContent } from '../messages/utils';
 
 const logger = createLogger('Action');
 

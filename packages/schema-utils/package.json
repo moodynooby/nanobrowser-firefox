@@ -1,6 +1,6 @@
 {
   "name": "@extension/schema-utils",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "JSON schema and related helpers for tools",
   "private": true,
   "type": "module",
@@ -16,9 +16,8 @@
     "clean:turbo": "rimraf .turbo",
     "clean": "pnpm clean:bundle && pnpm clean:node_modules && pnpm clean:turbo",
     "ready": "node build.mjs",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "type-check": "tsc --noEmit",
     "example:convert": "pnpm run ready && node dist/examples/convert.js",
     "example:flatten": "pnpm run ready && node dist/examples/flatten.js"

@@ -1,6 +1,6 @@
 {
   "name": "@extension/dev-utils",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "chrome extension - dev utils",
   "private": true,
   "sideEffects": false,
@@ -16,9 +16,8 @@
     "clean:turbo": "rimraf .turbo",
     "clean": "pnpm clean:bundle && pnpm clean:node_modules && pnpm clean:turbo",
     "ready": "tsc",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

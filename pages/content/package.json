@@ -1,6 +1,6 @@
 {
   "name": "@extension/content-script",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "chrome extension - content script",
   "private": true,
   "sideEffects": true,
@@ -14,9 +14,8 @@
     "clean": "pnpm clean:bundle && pnpm clean:turbo && pnpm clean:node_modules",
     "build": "vite build",
     "dev": "cross-env __DEV__=true vite build --mode development",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

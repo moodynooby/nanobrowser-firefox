@@ -1,9 +1,10 @@
-import { BaseAgent, type BaseAgentOptions, type ExtraAgentOptions } from './base';
+import { HumanMessage } from '@langchain/core/messages';
 import { createLogger } from '@src/background/log';
 import { z } from 'zod';
-import type { AgentOutput } from '../types';
-import { HumanMessage } from '@langchain/core/messages';
 import { Actors, ExecutionState } from '../event/types';
+import { filterExternalContent } from '../messages/utils';
+import type { AgentOutput } from '../types';
+import { BaseAgent, type BaseAgentOptions, type ExtraAgentOptions } from './base';
 import {
   ChatModelAuthError,
   ChatModelBadRequestError,
@@ -15,7 +16,7 @@ import {
   LLM_FORBIDDEN_ERROR_MESSAGE,
   RequestCancelledError,
 } from './errors';
-import { filterExternalContent } from '../messages/utils';
+
 const logger = createLogger('PlannerAgent');
 
 // Define Zod schema for planner output

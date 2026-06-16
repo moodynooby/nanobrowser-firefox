@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import process from 'node:process';
+import { pathToFileURL } from 'node:url';
 import { colorLog, ManifestParser } from '@extension/dev-utils';
-import type { PluginOption } from 'vite';
 import type { Manifest } from '@extension/dev-utils/lib/manifest-parser/type';
+import type { PluginOption } from 'vite';
 
 const rootDir = resolve(__dirname, '..', '..');
 const refreshFile = resolve(__dirname, '..', 'refresh.js');

@@ -1,8 +1,8 @@
 import { createLogger } from '@src/background/log';
-import type { BuildDomTreeArgs, RawDomTreeNode, RawDomElementNode, BuildDomTreeResult } from './raw_types';
-import { type DOMState, type DOMBaseNode, DOMElementNode, DOMTextNode } from './views';
-import type { ViewportInfo } from './history/view';
 import { isNewTabPage } from '../util';
+import type { ViewportInfo } from './history/view';
+import type { BuildDomTreeArgs, BuildDomTreeResult, RawDomElementNode, RawDomTreeNode } from './raw_types';
+import { type DOMBaseNode, DOMElementNode, type DOMState, DOMTextNode } from './views';
 
 const logger = createLogger('DOMService');
 

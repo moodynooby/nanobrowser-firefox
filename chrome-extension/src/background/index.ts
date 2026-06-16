@@ -1,21 +1,21 @@
 import 'webextension-polyfill';
+import { t } from '@extension/i18n';
 import {
-  agentModelStore,
   AgentNameEnum,
+  agentModelStore,
   firewallStore,
   generalSettingsStore,
   llmProviderStore,
 } from '@extension/storage';
-import { t } from '@extension/i18n';
-import BrowserContext from './browser/context';
-import { Executor } from './agent/executor';
-import { createLogger } from './log';
-import { ExecutionState } from './agent/event/types';
-import { createChatModel } from './agent/helper';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ExecutionState } from './agent/event/types';
+import { Executor } from './agent/executor';
+import { createChatModel } from './agent/helper';
 import { DEFAULT_AGENT_OPTIONS } from './agent/types';
-import { SpeechToTextService } from './services/speechToText';
+import BrowserContext from './browser/context';
 import { injectBuildDomTreeScripts } from './browser/dom/service';
+import { createLogger } from './log';
+import { SpeechToTextService } from './services/speechToText';
 
 const logger = createLogger('background');
 

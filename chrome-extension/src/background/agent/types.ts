@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import type BrowserContext from '../browser/context';
-import { DEFAULT_INCLUDE_ATTRIBUTES } from '../browser/dom/views';
 import type { DOMHistoryElement } from '../browser/dom/history/view';
-import type MessageManager from './messages/service';
+import { DEFAULT_INCLUDE_ATTRIBUTES } from '../browser/dom/views';
 import type { EventManager } from './event/manager';
-import { type Actors, type ExecutionState, AgentEvent } from './event/types';
+import { type Actors, AgentEvent, type ExecutionState } from './event/types';
 import { AgentStepHistory } from './history';
+import type MessageManager from './messages/service';
 
 export interface AgentOptions {
   maxSteps: number;

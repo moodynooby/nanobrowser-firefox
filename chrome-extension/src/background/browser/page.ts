@@ -1,4 +1,9 @@
 import 'webextension-polyfill';
+import { createLogger } from '@src/background/log';
+import type { Browser } from 'puppeteer-core/lib/esm/puppeteer/api/Browser.js';
+import type { ElementHandle } from 'puppeteer-core/lib/esm/puppeteer/api/ElementHandle.js';
+import type { Frame } from 'puppeteer-core/lib/esm/puppeteer/api/Frame.js';
+import type { Page as PuppeteerPage } from 'puppeteer-core/lib/esm/puppeteer/api/Page.js';
 import {
   connect,
   ExtensionTransport,
@@ -6,20 +11,15 @@ import {
   type HTTPResponse,
   type KeyInput,
 } from 'puppeteer-core/lib/esm/puppeteer/puppeteer-core-browser.js';
-import type { Browser } from 'puppeteer-core/lib/esm/puppeteer/api/Browser.js';
-import type { Page as PuppeteerPage } from 'puppeteer-core/lib/esm/puppeteer/api/Page.js';
-import type { ElementHandle } from 'puppeteer-core/lib/esm/puppeteer/api/ElementHandle.js';
-import type { Frame } from 'puppeteer-core/lib/esm/puppeteer/api/Frame.js';
+import { ClickableElementProcessor } from './dom/clickable/service';
 import {
   getClickableElements as _getClickableElements,
-  removeHighlights as _removeHighlights,
   getScrollInfo as _getScrollInfo,
+  removeHighlights as _removeHighlights,
 } from './dom/service';
 import { DOMElementNode, type DOMState } from './dom/views';
-import { type BrowserContextConfig, DEFAULT_BROWSER_CONTEXT_CONFIG, type PageState, URLNotAllowedError } from './views';
-import { createLogger } from '@src/background/log';
-import { ClickableElementProcessor } from './dom/clickable/service';
 import { isUrlAllowed } from './util';
+import { type BrowserContextConfig, DEFAULT_BROWSER_CONTEXT_CONFIG, type PageState, URLNotAllowedError } from './views';
 
 const logger = createLogger('Page');
 
@@ -1922,7 +1922,7 @@ export default class Page {
     if (elementNode.tagName === 'input') {
       // Check for file input attributes
       const attributes = elementNode.attributes;
-      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+      // biome-ignore lint/complexity/useLiteralKeys: bracket notation needed for dynamic property access
       if (attributes['type']?.toLowerCase() === 'file' || !!attributes['accept']) {
         return true;
       }
@@ -2032,7 +2032,7 @@ export default class Page {
       // Filter out requests with certain headers
       const headers = request.headers();
       if (
-        // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+        // biome-ignore lint/complexity/useLiteralKeys: bracket notation needed for variable-like header names
         headers['purpose'] === 'prefetch' ||
         headers['sec-fetch-dest'] === 'video' ||
         headers['sec-fetch-dest'] === 'audio'

@@ -36,7 +36,8 @@ export function Button({ theme, variant = 'primary', className, disabled, childr
         className,
       )}
       disabled={disabled}
-      {...props}>
+      {...props}
+    >
       {children}
     </button>
   );

@@ -1,5 +1,5 @@
-import { StorageEnum } from '../base/enums';
 import { createStorage } from '../base/base';
+import { StorageEnum } from '../base/enums';
 import type { BaseStorage } from '../base/types';
 
 // Interface for firewall settings configuration
