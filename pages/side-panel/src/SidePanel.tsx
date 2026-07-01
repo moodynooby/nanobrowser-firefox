@@ -31,7 +31,7 @@ const SidePanel = () => {
   const [chatSessions, setChatSessions] = useState<Array<{ id: string; title: string; createdAt: number }>>([]);
   const [isFollowUpMode, setIsFollowUpMode] = useState(false);
   const [isHistoricalSession, setIsHistoricalSession] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+
   const [favoritePrompts, setFavoritePrompts] = useState<FavoritePrompt[]>([]);
   const [hasConfiguredModels, setHasConfiguredModels] = useState<boolean | null>(null); // null = loading, false = no models, true = has models
   const [isRecording, setIsRecording] = useState(false);
@@ -47,19 +47,13 @@ const SidePanel = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<number | null>(null);
-
-  // Check for dark mode preference
-  useEffect(() => {
-    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeMediaQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
-
-    darkModeMediaQuery.addEventListener('change', handleChange);
-    return () => darkModeMediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  const pendingTaskRef = useRef<{
+    type: string;
+    task: string;
+    taskId: string;
+    tabId: number;
+  } | null>(null);
+  const retryTimeoutRef = useRef<number | null>(null);
 
   // Check if models are configured
   const checkModelConfiguration = useCallback(async () => {
@@ -160,12 +154,18 @@ const SidePanel = () => {
             case ExecutionState.TASK_START:
               // Reset historical session flag when a new task starts
               setIsHistoricalSession(false);
+              pendingTaskRef.current = null;
+              if (retryTimeoutRef.current) {
+                clearTimeout(retryTimeoutRef.current);
+                retryTimeoutRef.current = null;
+              }
               break;
             case ExecutionState.TASK_OK:
               setIsFollowUpMode(true);
               setInputEnabled(true);
               setShowStopButton(false);
               setIsReplaying(false);
+              pendingTaskRef.current = null;
               break;
             case ExecutionState.TASK_FAIL:
               setIsFollowUpMode(true);
@@ -173,6 +173,7 @@ const SidePanel = () => {
               setShowStopButton(false);
               setIsReplaying(false);
               skip = false;
+              pendingTaskRef.current = null;
               break;
             case ExecutionState.TASK_CANCEL:
               setIsFollowUpMode(false);
@@ -180,6 +181,7 @@ const SidePanel = () => {
               setShowStopButton(false);
               setIsReplaying(false);
               skip = false;
+              pendingTaskRef.current = null;
               break;
             case ExecutionState.TASK_PAUSE:
               break;
@@ -303,7 +305,9 @@ const SidePanel = () => {
     }
 
     try {
-      portRef.current = chrome.runtime.connect({ name: 'side-panel-connection' });
+      portRef.current = chrome.runtime.connect({
+        name: 'side-panel-connection',
+      });
 
       // biome-ignore lint/suspicious/noExplicitAny: chrome.runtime.Port onMessage type is generic
       portRef.current.onMessage.addListener((message: any) => {
@@ -319,6 +323,7 @@ const SidePanel = () => {
           });
           setInputEnabled(true);
           setShowStopButton(false);
+          pendingTaskRef.current = null;
         } else if (message && message.type === 'speech_to_text_result') {
           // Handle speech-to-text result
           if (message.text && setInputTextRef.current) {
@@ -346,8 +351,27 @@ const SidePanel = () => {
           clearInterval(heartbeatIntervalRef.current);
           heartbeatIntervalRef.current = null;
         }
-        setInputEnabled(true);
-        setShowStopButton(false);
+
+        if (pendingTaskRef.current) {
+          console.log('Reconnecting and resending pending task...');
+          retryTimeoutRef.current = window.setTimeout(() => {
+            setupConnection();
+            if (portRef.current && pendingTaskRef.current) {
+              try {
+                portRef.current.postMessage(pendingTaskRef.current);
+                console.log('Resent pending task', pendingTaskRef.current.task);
+              } catch (e) {
+                console.error('Failed to resend pending task:', e);
+                pendingTaskRef.current = null;
+                setInputEnabled(true);
+                setShowStopButton(false);
+              }
+            }
+          }, 1000);
+        } else {
+          setInputEnabled(true);
+          setShowStopButton(false);
+        }
       });
 
       // Setup heartbeat interval
@@ -422,7 +446,10 @@ const SidePanel = () => {
       }
 
       // Get current tab ID
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       const tabId = tabs[0]?.id;
       if (!tabId) {
         throw new Error('No active tab found');
@@ -571,7 +598,10 @@ const SidePanel = () => {
     }
 
     try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       const tabId = tabs[0]?.id;
       if (!tabId) {
         throw new Error('No active tab found');
@@ -629,6 +659,12 @@ const SidePanel = () => {
         });
         console.log('new_task sent', text, tabId, sessionIdRef.current);
       }
+      pendingTaskRef.current = {
+        type: isFollowUpMode ? 'follow_up_task' : 'new_task',
+        task: text,
+        taskId: sessionIdRef.current!,
+        tabId,
+      };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error('Task error', errorMessage);
@@ -639,11 +675,21 @@ const SidePanel = () => {
       });
       setInputEnabled(true);
       setShowStopButton(false);
+      pendingTaskRef.current = null;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
       stopConnection();
     }
   };
 
   const handleStopTask = async () => {
+    pendingTaskRef.current = null;
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
     try {
       portRef.current?.postMessage({
         type: 'cancel_task',
@@ -670,6 +716,11 @@ const SidePanel = () => {
     setShowStopButton(false);
     setIsFollowUpMode(false);
     setIsHistoricalSession(false);
+    pendingTaskRef.current = null;
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
 
     // Disconnect any existing connection
     stopConnection();
@@ -825,6 +876,10 @@ const SidePanel = () => {
         clearTimeout(recordingTimerRef.current);
         recordingTimerRef.current = null;
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
       stopConnection();
     };
   }, [stopConnection]);
@@ -852,7 +907,9 @@ const SidePanel = () => {
 
     try {
       // First check if permission is already granted
-      const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      const permissionStatus = await navigator.permissions.query({
+        name: 'microphone' as PermissionName,
+      });
 
       if (permissionStatus.state === 'denied') {
         appendMessage({
@@ -928,7 +985,9 @@ const SidePanel = () => {
 
         if (audioChunksRef.current.length > 0) {
           // Create audio blob
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const audioBlob = new Blob(audioChunksRef.current, {
+            type: 'audio/webm',
+          });
 
           // Convert blob to base64
           const reader = new FileReader();
@@ -1001,16 +1060,14 @@ const SidePanel = () => {
 
   return (
     <div>
-      <div
-        className={`flex h-screen flex-col ${isDarkMode ? 'bg-slate-900' : "bg-[url('/bg.jpg')] bg-cover bg-no-repeat"} overflow-hidden border ${isDarkMode ? 'border-sky-800' : 'border-[rgb(186,230,253)]'} rounded-2xl`}
-      >
+      <div className="flex h-screen flex-col bg-white dark:bg-slate-900 bg-[url('/bg.jpg')] dark:bg-none bg-cover bg-no-repeat overflow-hidden border border-rose-200 dark:border-rose-900 ">
         <header className="header relative">
           <div className="header-logo">
             {showHistory ? (
               <button
                 type="button"
                 onClick={() => handleBackToChat(false)}
-                className={`${isDarkMode ? 'text-sky-400 hover:text-sky-300' : 'text-sky-400 hover:text-sky-500'} cursor-pointer`}
+                className="text-accent hover:text-accent-dark cursor-pointer"
                 aria-label={t('nav_back_a11y')}
               >
                 {t('nav_back')}
@@ -1026,7 +1083,7 @@ const SidePanel = () => {
                   type="button"
                   onClick={handleNewChat}
                   onKeyDown={e => e.key === 'Enter' && handleNewChat()}
-                  className={`header-icon ${isDarkMode ? 'text-sky-400 hover:text-sky-300' : 'text-sky-400 hover:text-sky-500'} cursor-pointer`}
+                  className="header-icon cursor-pointer"
                   aria-label={t('nav_newChat_a11y')}
                   tabIndex={0}
                 >
@@ -1036,7 +1093,7 @@ const SidePanel = () => {
                   type="button"
                   onClick={handleLoadHistory}
                   onKeyDown={e => e.key === 'Enter' && handleLoadHistory()}
-                  className={`header-icon ${isDarkMode ? 'text-sky-400 hover:text-sky-300' : 'text-sky-400 hover:text-sky-500'} cursor-pointer`}
+                  className="header-icon cursor-pointer"
                   aria-label={t('nav_loadHistory_a11y')}
                   tabIndex={0}
                 >
@@ -1048,7 +1105,7 @@ const SidePanel = () => {
               type="button"
               onClick={() => chrome.runtime.openOptionsPage()}
               onKeyDown={e => e.key === 'Enter' && chrome.runtime.openOptionsPage()}
-              className={`header-icon ${isDarkMode ? 'text-sky-400 hover:text-sky-300' : 'text-sky-400 hover:text-sky-500'} cursor-pointer`}
+              className="header-icon cursor-pointer"
               aria-label={t('nav_settings_a11y')}
               tabIndex={0}
             >
@@ -1064,39 +1121,30 @@ const SidePanel = () => {
               onSessionDelete={handleSessionDelete}
               onSessionBookmark={handleSessionBookmark}
               visible={true}
-              isDarkMode={isDarkMode}
             />
           </div>
         ) : (
           <>
-            {/* Show loading state while checking model configuration */}
             {hasConfiguredModels === null && (
-              <div
-                className={`flex flex-1 items-center justify-center p-8 ${isDarkMode ? 'text-sky-300' : 'text-sky-600'}`}
-              >
+              <div className="flex flex-1 items-center justify-center p-8 text-accent dark:text-accent-light">
                 <div className="text-center">
-                  <div className="mx-auto mb-4 size-8 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+                  <div className="mx-auto mb-4 size-8 animate-spin rounded-full border-2 border-accent border-t-transparent"></div>
                   <p>{t('status_checkingConfig')}</p>
                 </div>
               </div>
             )}
 
-            {/* Show setup message when no models are configured */}
             {hasConfiguredModels === false && (
-              <div
-                className={`flex flex-1 items-center justify-center p-8 ${isDarkMode ? 'text-sky-300' : 'text-sky-600'}`}
-              >
+              <div className="flex flex-1 items-center justify-center p-8 text-accent dark:text-accent-light">
                 <div className="max-w-md text-center">
                   <img src="/icon-128.png" alt="Logo" className="mx-auto mb-4 size-12" />
-                  <h3 className={`mb-2 text-lg font-semibold ${isDarkMode ? 'text-sky-200' : 'text-sky-700'}`}>
+                  <h3 className="mb-2 text-lg font-semibold text-accent-dark dark:text-accent-light">
                     {t('welcome_title')}
                   </h3>
                   <p className="mb-4">{t('welcome_instruction')}</p>
                   <button
                     onClick={() => chrome.runtime.openOptionsPage()}
-                    className={`my-4 rounded-lg px-4 py-2 font-medium transition-colors ${
-                      isDarkMode ? 'bg-sky-600 text-white hover:bg-sky-700' : 'bg-sky-500 text-white hover:bg-sky-600'
-                    }`}
+                    className="my-4 rounded-lg px-4 py-2 font-medium transition-colors bg-accent text-white hover:bg-accent-dark"
                   >
                     {t('welcome_openSettings')}
                   </button>
@@ -1104,14 +1152,11 @@ const SidePanel = () => {
               </div>
             )}
 
-            {/* Show normal chat interface when models are configured */}
             {hasConfiguredModels === true && (
               <>
                 {messages.length === 0 && (
                   <>
-                    <div
-                      className={`border-t ${isDarkMode ? 'border-sky-900' : 'border-sky-100'} mb-2 p-2 shadow-sm backdrop-blur-sm`}
-                    >
+                    <div className="border-t border-rose-100 dark:border-rose-900 mb-2 p-2 shadow-sm backdrop-blur-sm">
                       <ChatInput
                         onSendMessage={handleSendMessage}
                         onStopTask={handleStopTask}
@@ -1123,7 +1168,6 @@ const SidePanel = () => {
                         setContent={setter => {
                           setInputTextRef.current = setter;
                         }}
-                        isDarkMode={isDarkMode}
                         historicalSessionId={isHistoricalSession && replayEnabled ? currentSessionId : null}
                         onReplay={handleReplay}
                       />
@@ -1135,23 +1179,18 @@ const SidePanel = () => {
                         onBookmarkUpdateTitle={handleBookmarkUpdateTitle}
                         onBookmarkDelete={handleBookmarkDelete}
                         onBookmarkReorder={handleBookmarkReorder}
-                        isDarkMode={isDarkMode}
                       />
                     </div>
                   </>
                 )}
                 {messages.length > 0 && (
-                  <div
-                    className={`scrollbar-gutter-stable flex-1 overflow-x-hidden overflow-y-scroll scroll-smooth p-2 ${isDarkMode ? 'bg-slate-900/80' : ''}`}
-                  >
-                    <MessageList messages={messages} isDarkMode={isDarkMode} />
+                  <div className="scrollbar-gutter-stable flex-1 overflow-x-hidden overflow-y-scroll scroll-smooth p-2 dark:bg-slate-900/80">
+                    <MessageList messages={messages} />
                     <div ref={messagesEndRef} />
                   </div>
                 )}
                 {messages.length > 0 && (
-                  <div
-                    className={`border-t ${isDarkMode ? 'border-sky-900' : 'border-sky-100'} p-2 shadow-sm backdrop-blur-sm`}
-                  >
+                  <div className="border-t border-rose-100 dark:border-rose-900 p-2 shadow-sm backdrop-blur-sm">
                     <ChatInput
                       onSendMessage={handleSendMessage}
                       onStopTask={handleStopTask}
@@ -1163,7 +1202,6 @@ const SidePanel = () => {
                       setContent={setter => {
                         setInputTextRef.current = setter;
                       }}
-                      isDarkMode={isDarkMode}
                       historicalSessionId={isHistoricalSession && replayEnabled ? currentSessionId : null}
                       onReplay={handleReplay}
                     />

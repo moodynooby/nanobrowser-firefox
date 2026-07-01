@@ -54,11 +54,7 @@ function isAnthropicModel(modelName: string): boolean {
   return modelNameWithoutProvider.startsWith('claude-');
 }
 
-interface ModelSettingsProps {
-  isDarkMode?: boolean; // Controls dark/light theme styling
-}
-
-export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
+export const ModelSettings = () => {
   const [providers, setProviders] = useState<Record<string, ProviderConfig>>({});
   const [modifiedProviders, setModifiedProviders] = useState<Set<string>>(new Set());
   const [providersFromStorage, setProvidersFromStorage] = useState<Set<string>>(new Set());
@@ -384,7 +380,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
     // For deletion, we only care if it's in storage and not modified
     if (isInStorage && !isModified) {
       return {
-        theme: isDarkMode ? 'dark' : 'light',
+        theme: 'dark',
         variant: 'danger' as const,
         children: t('options_models_providers_btnDelete'),
         disabled: false,
@@ -419,7 +415,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
     }
 
     return {
-      theme: isDarkMode ? 'dark' : 'light',
+      theme: 'dark',
       variant: 'primary' as const,
       children: t('options_models_providers_btnSave'),
       disabled: !hasInput || !isModified,
@@ -712,28 +708,21 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
   };
 
   const renderModelSelect = (agentName: AgentNameEnum) => (
-    <div
-      className={`rounded-lg border ${isDarkMode ? 'border-gray-700 bg-slate-800' : 'border-gray-200 bg-gray-50'} p-4`}
-    >
-      <h3 className={`mb-2 text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+    <div className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800 p-4`}>
+      <h3 className={`mb-2 text-lg font-medium text-gray-700 dark:text-gray-300`}>
         {agentName.charAt(0).toUpperCase() + agentName.slice(1)}
       </h3>
-      <p className={`mb-4 text-sm font-normal ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-        {getAgentDescription(agentName)}
-      </p>
+      <p className={`mb-4 text-sm font-normal text-gray-500 dark:text-gray-400`}>{getAgentDescription(agentName)}</p>
 
       <div className="space-y-4">
         {/* Model Selection */}
         <div className="flex items-center">
-          <label
-            htmlFor={`${agentName}-model`}
-            className={`w-24 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
+          <label htmlFor={`${agentName}-model`} className={`w-24 text-sm font-medium text-gray-700 dark:text-gray-300`}>
             {t('options_models_labels_model')}
           </label>
           <select
             id={`${agentName}-model`}
-            className={`flex-1 rounded-md border text-sm ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'} px-3 py-2`}
+            className={`flex-1 rounded-md border text-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 px-3 py-2`}
             disabled={availableModels.length === 0}
             value={selectedModels[agentName] || ''} // Use the stored provider>model value directly
             onChange={e => handleModelChange(agentName, e.target.value)}
@@ -754,7 +743,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
           <div className="flex items-center">
             <label
               htmlFor={`${agentName}-temperature`}
-              className={`w-24 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+              className={`w-24 text-sm font-medium text-gray-700 dark:text-gray-300`}
             >
               {t('options_models_labels_temperature')}
             </label>
@@ -768,12 +757,12 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                 value={modelParameters[agentName].temperature}
                 onChange={e => handleParameterChange(agentName, 'temperature', Number.parseFloat(e.target.value))}
                 style={{
-                  background: `linear-gradient(to right, ${isDarkMode ? '#3b82f6' : '#60a5fa'} 0%, ${isDarkMode ? '#3b82f6' : '#60a5fa'} ${(modelParameters[agentName].temperature / 2) * 100}%, ${isDarkMode ? '#475569' : '#cbd5e1'} ${(modelParameters[agentName].temperature / 2) * 100}%, ${isDarkMode ? '#475569' : '#cbd5e1'} 100%)`,
+                  background: `linear-gradient(to right, #e11d48 0%, #e11d48 ${(modelParameters[agentName].temperature / 2) * 100}%, #cbd5e1 ${(modelParameters[agentName].temperature / 2) * 100}%, #cbd5e1 100%)`,
                 }}
-                className={`flex-1 ${isDarkMode ? 'accent-blue-500' : 'accent-blue-400'} h-1 appearance-none rounded-full`}
+                className="flex-1 accent-accent h-1 appearance-none rounded-full"
               />
               <div className="flex items-center space-x-2">
-                <span className={`w-12 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                <span className={`w-12 text-sm text-gray-600 dark:text-gray-300`}>
                   {modelParameters[agentName].temperature.toFixed(2)}
                 </span>
                 <input
@@ -788,7 +777,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                       handleParameterChange(agentName, 'temperature', value);
                     }
                   }}
-                  className={`w-20 rounded-md border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-800' : 'border-gray-300 bg-white text-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'} px-2 py-1 text-sm`}
+                  className="w-20 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:border-accent focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 px-2 py-1 text-sm"
                   aria-label={`${agentName} temperature number input`}
                 />
               </div>
@@ -803,7 +792,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
             <div className="flex items-center">
               <label
                 htmlFor={`${agentName}-topP`}
-                className={`w-24 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                className={`w-24 text-sm font-medium text-gray-700 dark:text-gray-300`}
               >
                 {t('options_models_labels_topP')}
               </label>
@@ -817,12 +806,12 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                   value={modelParameters[agentName].topP}
                   onChange={e => handleParameterChange(agentName, 'topP', Number.parseFloat(e.target.value))}
                   style={{
-                    background: `linear-gradient(to right, ${isDarkMode ? '#3b82f6' : '#60a5fa'} 0%, ${isDarkMode ? '#3b82f6' : '#60a5fa'} ${modelParameters[agentName].topP * 100}%, ${isDarkMode ? '#475569' : '#cbd5e1'} ${modelParameters[agentName].topP * 100}%, ${isDarkMode ? '#475569' : '#cbd5e1'} 100%)`,
+                    background: `linear-gradient(to right, #e11d48 0%, #e11d48 ${modelParameters[agentName].topP * 100}%, #cbd5e1 ${modelParameters[agentName].topP * 100}%, #cbd5e1 100%)`,
                   }}
-                  className={`flex-1 ${isDarkMode ? 'accent-blue-500' : 'accent-blue-400'} h-1 appearance-none rounded-full`}
+                  className="flex-1 accent-accent h-1 appearance-none rounded-full"
                 />
                 <div className="flex items-center space-x-2">
-                  <span className={`w-12 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <span className={`w-12 text-sm text-gray-600 dark:text-gray-300`}>
                     {modelParameters[agentName].topP.toFixed(3)}
                   </span>
                   <input
@@ -837,7 +826,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                         handleParameterChange(agentName, 'topP', value);
                       }
                     }}
-                    className={`w-20 rounded-md border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-800' : 'border-gray-300 bg-white text-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'} px-2 py-1 text-sm`}
+                    className="w-20 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:border-accent focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 px-2 py-1 text-sm"
                     aria-label={`${agentName} top P number input`}
                   />
                 </div>
@@ -850,7 +839,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
           <div className="flex items-center">
             <label
               htmlFor={`${agentName}-reasoning-effort`}
-              className={`w-24 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+              className={`w-24 text-sm font-medium text-gray-700 dark:text-gray-300`}
             >
               {t('options_models_labels_reasoning')}
             </label>
@@ -861,7 +850,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                 onChange={e =>
                   handleReasoningEffortChange(agentName, e.target.value as 'minimal' | 'low' | 'medium' | 'high')
                 }
-                className={`flex-1 rounded-md border text-sm ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'} px-3 py-2`}
+                className={`flex-1 rounded-md border text-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 px-3 py-2`}
               >
                 <option value="minimal/none">Minimal</option>
                 <option value="low">Low</option>
@@ -1136,9 +1125,9 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
     <section className="space-y-6">
       {/* LLM Providers Section */}
       <div
-        className={`rounded-lg border ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-blue-100 bg-gray-50'} p-6 text-left shadow-sm`}
+        className={`rounded-lg border border-rose-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 text-left shadow-sm`}
       >
-        <h2 className={`mb-4 text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+        <h2 className={`mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200`}>
           {t('options_models_providers_header')}
         </h2>
         <div className="space-y-6">
@@ -1158,10 +1147,10 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                 <div
                   key={providerId}
                   id={`provider-${providerId}`}
-                  className={`space-y-4 ${modifiedProviders.has(providerId) && !providersFromStorage.has(providerId) ? `rounded-lg border p-4 ${isDarkMode ? 'border-blue-700 bg-slate-700' : 'border-blue-200 bg-blue-50/70'}` : ''}`}
+                  className={`space-y-4 ${modifiedProviders.has(providerId) && !providersFromStorage.has(providerId) ? `rounded-lg border p-4 border-blue-200 dark:border-blue-700 bg-blue-50/70 dark:bg-slate-700` : ''}`}
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className={`text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <h3 className={`text-lg font-medium text-gray-700 dark:text-gray-300`}>
                       {providerConfig.name || providerId}
                     </h3>
                     <div className="flex space-x-2">
@@ -1187,7 +1176,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
 
                   {/* Show message for newly added providers */}
                   {modifiedProviders.has(providerId) && !providersFromStorage.has(providerId) && (
-                    <div className={`mb-2 text-sm ${isDarkMode ? 'text-teal-300' : 'text-teal-700'}`}>
+                    <div className={`mb-2 text-sm text-teal-700 dark:text-teal-300`}>
                       <p>{t('options_models_providers_setupInstructions')}</p>
                     </div>
                   )}
@@ -1199,7 +1188,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                         <div className="flex items-center">
                           <label
                             htmlFor={`${providerId}-name`}
-                            className={`w-20 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                            className={`w-20 text-sm font-medium text-gray-700 dark:text-gray-300`}
                           >
                             {t('options_models_providers_custom_name')}
                           </label>
@@ -1214,21 +1203,17 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                             }}
                             className={`flex-1 rounded-md border p-2 text-sm ${
                               nameErrors[providerId]
-                                ? isDarkMode
-                                  ? 'border-red-700 bg-slate-700 text-gray-200 focus:border-red-600 focus:ring-2 focus:ring-red-900'
-                                  : 'border-red-300 bg-gray-50 focus:border-red-400 focus:ring-2 focus:ring-red-200'
-                                : isDarkMode
-                                  ? 'border-blue-700 bg-slate-700 text-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-900'
-                                  : 'border-blue-300 bg-gray-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'
+                                ? 'border-red-300 dark:border-red-700 bg-gray-50 dark:bg-slate-700 text-gray-200 focus:border-red-400 dark:focus:border-red-600 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900'
+                                : 'border-blue-300 dark:border-blue-700 bg-gray-50 dark:bg-slate-700 text-gray-200 focus:border-accent dark:focus:border-blue-600 focus:ring-2 focus:ring-rose-200 dark:focus:ring-blue-900'
                             } outline-none`}
                           />
                         </div>
                         {nameErrors[providerId] ? (
-                          <p className={`ml-20 mt-1 text-xs ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>
+                          <p className={`ml-20 mt-1 text-xs text-red-500 dark:text-red-400`}>
                             {nameErrors[providerId]}
                           </p>
                         ) : (
-                          <p className={`ml-20 mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <p className={`ml-20 mt-1 text-xs text-gray-500 dark:text-gray-400`}>
                             {t('options_models_providers_custom_name_desc')}
                           </p>
                         )}
@@ -1239,7 +1224,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                     <div className="flex items-center">
                       <label
                         htmlFor={`${providerId}-api-key`}
-                        className={`w-20 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className={`w-20 text-sm font-medium text-gray-700 dark:text-gray-300`}
                       >
                         {t('options_models_providers_apiKey')}
                         {/* Show asterisk only if required */}
@@ -1261,15 +1246,13 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                           }
                           value={providerConfig.apiKey || ''}
                           onChange={e => handleApiKeyChange(providerId, e.target.value, providerConfig.baseUrl)}
-                          className={`w-full rounded-md border text-sm ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-800' : 'border-gray-300 bg-white text-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'} p-2 outline-none`}
+                          className="w-full rounded-md border text-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:border-accent focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 p-2 outline-none"
                         />
                         {/* Show eye button only for newly added providers */}
                         {modifiedProviders.has(providerId) && !providersFromStorage.has(providerId) && (
                           <button
                             type="button"
-                            className={`absolute right-2 top-1/2 -translate-y-1/2 ${
-                              isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                             onClick={() => toggleApiKeyVisibility(providerId)}
                             aria-label={
                               visibleApiKeys[providerId]
@@ -1317,9 +1300,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                       visibleApiKeys[providerId] &&
                       providerConfig.apiKey && (
                         <div className="ml-20 mt-1">
-                          <p
-                            className={`break-words font-mono text-sm ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}
-                          >
+                          <p className={`break-words font-mono text-sm text-emerald-600 dark:text-emerald-400`}>
                             {providerConfig.apiKey}
                           </p>
                         </div>
@@ -1335,7 +1316,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                         <div className="flex items-center">
                           <label
                             htmlFor={`${providerId}-base-url`}
-                            className={`w-20 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                            className={`w-20 text-sm font-medium text-gray-700 dark:text-gray-300`}
                           >
                             {/* Adjust Label based on provider */}
                             {providerConfig.type === ProviderTypeEnum.AzureOpenAI
@@ -1364,7 +1345,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                             }
                             value={providerConfig.baseUrl || ''}
                             onChange={e => handleApiKeyChange(providerId, providerConfig.apiKey || '', e.target.value)}
-                            className={`flex-1 rounded-md border text-sm ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-800' : 'border-gray-300 bg-white text-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'} p-2 outline-none`}
+                            className="flex-1 rounded-md border text-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:border-accent focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 p-2 outline-none"
                           />
                         </div>
                       </div>
@@ -1375,26 +1356,26 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                       <div className="flex items-start">
                         <label
                           htmlFor={`${providerId}-azure-deployment`}
-                          className={`w-20 pt-2 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                          className={`w-20 pt-2 text-sm font-medium text-gray-700 dark:text-gray-300`}
                         >
                           {t('options_models_providers_deployment')}*
                         </label>
                         <div className="flex-1 space-y-2">
                           <div
-                            className={`flex min-h-[42px] flex-wrap items-center gap-2 rounded-md border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'} p-2`}
+                            className={`flex min-h-[42px] flex-wrap items-center gap-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 p-2`}
                           >
                             {/* Show azure deployments */}
                             {(providerConfig.azureDeploymentNames || []).length > 0
                               ? (providerConfig.azureDeploymentNames || []).map((deploymentName: string) => (
                                   <div
                                     key={deploymentName}
-                                    className={`flex items-center rounded-full ${isDarkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'} px-2 py-1 text-sm`}
+                                    className={`flex items-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-2 py-1 text-sm`}
                                   >
                                     <span>{deploymentName}</span>
                                     <button
                                       type="button"
                                       onClick={() => removeAzureDeployment(providerId, deploymentName)}
-                                      className={`ml-1 font-bold ${isDarkMode ? 'text-blue-300 hover:text-blue-100' : 'text-blue-600 hover:text-blue-800'}`}
+                                      className={`ml-1 font-bold text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100`}
                                       aria-label={`Remove ${deploymentName}`}
                                     >
                                       ×
@@ -1422,10 +1403,10 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                                   }
                                 }
                               }}
-                              className={`min-w-[150px] flex-1 border-none text-sm ${isDarkMode ? 'bg-transparent text-gray-200' : 'bg-transparent text-gray-700'} p-1 outline-none`}
+                              className={`min-w-[150px] flex-1 border-none text-sm bg-transparent text-gray-700 dark:text-gray-200 p-1 outline-none`}
                             />
                           </div>
-                          <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <p className={`mt-1 text-xs text-gray-500 dark:text-gray-400`}>
                             {t('options_models_providers_deployment_desc')}
                           </p>
                         </div>
@@ -1437,7 +1418,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                       <div className="flex items-center">
                         <label
                           htmlFor={`${providerId}-azure-version`}
-                          className={`w-20 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                          className={`w-20 text-sm font-medium text-gray-700 dark:text-gray-300`}
                         >
                           {t('options_models_providers_apiVersion')}*
                         </label>
@@ -1447,7 +1428,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                           placeholder={t('options_models_providers_placeholders_azureApiVersion')}
                           value={providerConfig.azureApiVersion || ''}
                           onChange={e => handleAzureApiVersionChange(providerId, e.target.value)}
-                          className={`flex-1 rounded-md border text-sm ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-800' : 'border-gray-300 bg-white text-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'} p-2 outline-none`}
+                          className="flex-1 rounded-md border text-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:border-accent focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 p-2 outline-none"
                         />
                       </div>
                     )}
@@ -1457,7 +1438,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                       <div className="flex items-start">
                         <label
                           htmlFor={`${providerId}-models-label`}
-                          className={`w-20 pt-2 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                          className={`w-20 pt-2 text-sm font-medium text-gray-700 dark:text-gray-300`}
                         >
                           {t('options_models_providers_models')}
                         </label>
@@ -1466,19 +1447,19 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                           {(providerConfig.type as ProviderTypeEnum) === ProviderTypeEnum.OpenRouter ? (
                             <>
                               <div
-                                className={`flex min-h-[42px] flex-wrap items-center gap-2 rounded-md border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'} p-2`}
+                                className={`flex min-h-[42px] flex-wrap items-center gap-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 p-2`}
                               >
                                 {providerConfig.modelNames && providerConfig.modelNames.length > 0 ? (
                                   providerConfig.modelNames.map(model => (
                                     <div
                                       key={model}
-                                      className={`flex items-center rounded-full ${isDarkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'} px-2 py-1 text-sm`}
+                                      className={`flex items-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-2 py-1 text-sm`}
                                     >
                                       <span>{model}</span>
                                       <button
                                         type="button"
                                         onClick={() => removeModel(providerId, model)}
-                                        className={`ml-1 font-bold ${isDarkMode ? 'text-blue-300 hover:text-blue-100' : 'text-blue-600 hover:text-blue-800'}`}
+                                        className={`ml-1 font-bold text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100`}
                                         aria-label={`Remove ${model}`}
                                       >
                                         ×
@@ -1486,7 +1467,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                                     </div>
                                   ))
                                 ) : (
-                                  <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  <span className={`text-xs text-gray-500 dark:text-gray-400`}>
                                     {t('options_models_providers_models_openrouter_empty')}
                                   </span>
                                 )}
@@ -1497,10 +1478,10 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                                   value={newModelInputs[providerId] || ''}
                                   onChange={e => handleModelsChange(providerId, e.target.value)}
                                   onKeyDown={e => handleKeyDown(e, providerId)}
-                                  className={`min-w-[150px] flex-1 border-none text-sm ${isDarkMode ? 'bg-transparent text-gray-200' : 'bg-transparent text-gray-700'} p-1 outline-none`}
+                                  className={`min-w-[150px] flex-1 border-none text-sm bg-transparent text-gray-700 dark:text-gray-200 p-1 outline-none`}
                                 />
                               </div>
-                              <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <p className={`mt-1 text-xs text-gray-500 dark:text-gray-400`}>
                                 {t('options_models_providers_models_instructions')}
                               </p>
                             </>
@@ -1508,7 +1489,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                             /* Default Tag Input for other providers */
                             <>
                               <div
-                                className={`flex min-h-[42px] flex-wrap items-center gap-2 rounded-md border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'} p-2`}
+                                className={`flex min-h-[42px] flex-wrap items-center gap-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 p-2`}
                               >
                                 {(() => {
                                   const models =
@@ -1518,13 +1499,13 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                                   return models.map(model => (
                                     <div
                                       key={model}
-                                      className={`flex items-center rounded-full ${isDarkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'} px-2 py-1 text-sm`}
+                                      className={`flex items-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-2 py-1 text-sm`}
                                     >
                                       <span>{model}</span>
                                       <button
                                         type="button"
                                         onClick={() => removeModel(providerId, model)}
-                                        className={`ml-1 font-bold ${isDarkMode ? 'text-blue-300 hover:text-blue-100' : 'text-blue-600 hover:text-blue-800'}`}
+                                        className={`ml-1 font-bold text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100`}
                                         aria-label={`Remove ${model}`}
                                       >
                                         ×
@@ -1539,10 +1520,10 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                                   value={newModelInputs[providerId] || ''}
                                   onChange={e => handleModelsChange(providerId, e.target.value)}
                                   onKeyDown={e => handleKeyDown(e, providerId)}
-                                  className={`min-w-[150px] flex-1 border-none text-sm ${isDarkMode ? 'bg-transparent text-gray-200' : 'bg-transparent text-gray-700'} p-1 outline-none`}
+                                  className={`min-w-[150px] flex-1 border-none text-sm bg-transparent text-gray-700 dark:text-gray-200 p-1 outline-none`}
                                 />
                               </div>
-                              <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <p className={`mt-1 text-xs text-gray-500 dark:text-gray-400`}>
                                 {t('options_models_providers_models_instructions')}
                               </p>
                             </>
@@ -1555,14 +1536,12 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                     {/* Ollama reminder at the bottom of the section */}
                     {providerConfig.type === ProviderTypeEnum.Ollama && (
                       <div
-                        className={`mt-4 rounded-md border ${isDarkMode ? 'border-slate-600 bg-slate-700' : 'border-blue-100 bg-blue-50'} p-3`}
+                        className={`mt-4 rounded-md border border-blue-100 dark:border-slate-600 bg-blue-50 dark:bg-slate-700 p-3`}
                       >
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                        <p className={`text-sm text-gray-700 dark:text-gray-200`}>
                           <strong>
                             {' '}
-                            <code
-                              className={`rounded italic ${isDarkMode ? 'bg-slate-600 px-1 py-0.5' : 'bg-blue-100 px-1 py-0.5'}`}
-                            >
+                            <code className={`rounded italic bg-blue-100 dark:bg-slate-600 px-1 py-0.5`}>
                               OLLAMA_ORIGINS=chrome-extension://*
                             </code>{' '}
                           </strong>
@@ -1571,7 +1550,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                             href="https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-allow-additional-web-origins-to-access-ollama"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`ml-1 ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}
+                            className="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                           >
                             {t('options_models_providers_ollama_learnMore')}
                           </a>
@@ -1582,7 +1561,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
 
                   {/* Add divider except for the last item */}
                   {Object.keys(providers).indexOf(providerId) < Object.keys(providers).length - 1 && (
-                    <div className={`mt-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`} />
+                    <div className="mt-4 border-t border-gray-200 dark:border-gray-700" />
                   )}
                 </div>
               );
@@ -1594,24 +1573,14 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
             <Button
               variant="secondary"
               onClick={() => setIsProviderSelectorOpen(prev => !prev)}
-              className={`flex w-full items-center justify-center font-medium ${
-                isDarkMode
-                  ? 'border-blue-700 bg-blue-600 text-white hover:bg-blue-500'
-                  : 'border-blue-200 bg-blue-100 text-blue-800 hover:bg-blue-200'
-              }`}
+              className="flex w-full items-center justify-center font-medium border-rose-200 dark:border-blue-700 bg-rose-100 dark:bg-blue-600 text-rose-800 dark:text-white hover:bg-rose-200 dark:hover:bg-blue-500"
             >
               <span className="mr-2 text-sm">+</span>{' '}
               <span className="text-sm">{t('options_models_addNewProvider')}</span>
             </Button>
 
             {isProviderSelectorOpen && (
-              <div
-                className={`absolute z-10 mt-2 w-full overflow-hidden rounded-md border ${
-                  isDarkMode
-                    ? 'border-blue-600 bg-slate-700 shadow-lg shadow-slate-900/50'
-                    : 'border-blue-200 bg-white shadow-xl shadow-blue-100/50'
-                }`}
-              >
+              <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-md border border-blue-200 dark:border-blue-600 bg-white dark:bg-slate-700 shadow-xl dark:shadow-lg shadow-blue-100 dark:shadow-slate-900/50">
                 <div className="py-1">
                   {/* Map through provider types to create buttons */}
                   {Object.values(ProviderTypeEnum)
@@ -1627,11 +1596,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                       <button
                         key={type}
                         type="button"
-                        className={`flex w-full items-center px-4 py-3 text-left text-sm ${
-                          isDarkMode
-                            ? 'text-blue-200 hover:bg-blue-600/30 hover:text-white'
-                            : 'text-blue-700 hover:bg-blue-100 hover:text-blue-800'
-                        } transition-colors duration-150`}
+                        className="flex w-full items-center px-4 py-3 text-left text-sm text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-600/30 hover:text-blue-800 dark:hover:text-white transition-colors duration-150"
                         onClick={() => handleProviderSelection(type)}
                       >
                         <span className="font-medium">{getDefaultDisplayNameFromProviderId(type)}</span>
@@ -1641,11 +1606,7 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
                   {/* Custom provider button (always shown) */}
                   <button
                     type="button"
-                    className={`flex w-full items-center px-4 py-3 text-left text-sm ${
-                      isDarkMode
-                        ? 'text-blue-200 hover:bg-blue-600/30 hover:text-white'
-                        : 'text-blue-700 hover:bg-blue-100 hover:text-blue-800'
-                    } transition-colors duration-150`}
+                    className="flex w-full items-center px-4 py-3 text-left text-sm text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-600/30 hover:text-blue-800 dark:hover:text-white transition-colors duration-150"
                     onClick={() => handleProviderSelection(ProviderTypeEnum.CustomOpenAI)}
                   >
                     <span className="font-medium">{t('options_models_providers_openaiCompatible')}</span>
@@ -1659,9 +1620,9 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
 
       {/* Updated Agent Models Section */}
       <div
-        className={`rounded-lg border ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-blue-100 bg-gray-50'} p-6 text-left shadow-sm`}
+        className={`rounded-lg border border-rose-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 text-left shadow-sm`}
       >
-        <h2 className={`mb-4 text-left text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+        <h2 className={`mb-4 text-left text-xl font-semibold text-gray-800 dark:text-gray-200`}>
           {t('options_models_selection_header')}
         </h2>
         <div className="space-y-4">
@@ -1673,28 +1634,24 @@ export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
 
       {/* Speech-to-Text Model Selection */}
       <div
-        className={`rounded-lg border ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-blue-100 bg-gray-50'} p-6 text-left shadow-sm`}
+        className={`rounded-lg border border-rose-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 text-left shadow-sm`}
       >
-        <h2 className={`mb-4 text-left text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+        <h2 className={`mb-4 text-left text-xl font-semibold text-gray-800 dark:text-gray-200`}>
           {t('options_models_speechToText_header')}
         </h2>
-        <p className={`mb-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          {t('options_models_stt_desc')}
-        </p>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">{t('options_models_stt_desc')}</p>
 
-        <div
-          className={`rounded-lg border ${isDarkMode ? 'border-gray-700 bg-slate-800' : 'border-gray-200 bg-gray-50'} p-4`}
-        >
+        <div className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800 p-4`}>
           <div className="flex items-center">
             <label
               htmlFor="speech-to-text-model"
-              className={`w-24 text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+              className={`w-24 text-sm font-medium text-gray-700 dark:text-gray-300`}
             >
               {t('options_models_labels_model')}
             </label>
             <select
               id="speech-to-text-model"
-              className={`flex-1 rounded-md border text-sm ${isDarkMode ? 'border-slate-600 bg-slate-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'} px-3 py-2`}
+              className={`flex-1 rounded-md border text-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 px-3 py-2`}
               value={selectedSpeechToTextModel}
               onChange={e => handleSpeechToTextModelChange(e.target.value)}
             >
