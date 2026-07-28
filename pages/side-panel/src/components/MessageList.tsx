@@ -53,11 +53,11 @@ function MessageBlock({ message, isSameActor }: MessageBlockProps) {
 
       <div className="min-w-0 flex-1">
         {!isSameActor && (
-          <div className="mb-1 text-sm font-semibold text-gray-900 dark:text-gray-200">{actor.name}</div>
+          <div className="mb-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{actor.name}</div>
         )}
 
         <div className="space-y-0.5">
-          <div className="whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300">
+          <div className="whitespace-pre-wrap break-words text-sm text-gray-800 dark:text-gray-100">
             {isProgress ? (
               <div className="h-1 overflow-hidden rounded bg-gray-200 dark:bg-gray-700">
                 <div className="h-full animate-progress bg-accent" />
@@ -67,7 +67,7 @@ function MessageBlock({ message, isSameActor }: MessageBlockProps) {
             )}
           </div>
           {!isProgress && (
-            <div className="text-right text-xs text-gray-300 dark:text-gray-500">
+            <div className="text-right text-xs text-gray-600 dark:text-gray-400">
               {formatTimestamp(message.timestamp)}
             </div>
           )}

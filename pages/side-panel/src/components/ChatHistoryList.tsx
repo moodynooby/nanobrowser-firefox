@@ -34,9 +34,9 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
 
   return (
     <div className="h-full overflow-y-auto p-4">
-      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">{t('chat_history_title')}</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">{t('chat_history_title')}</h2>
       {sessions.length === 0 ? (
-        <div className="rounded-lg bg-white/30 dark:bg-slate-800 text-gray-500 dark:text-gray-400 p-4 text-center backdrop-blur-sm">
+        <div className="rounded-lg bg-white/30 dark:bg-slate-800 text-gray-600 dark:text-gray-300 p-4 text-center backdrop-blur-sm">
           {t('chat_history_empty')}
         </div>
       ) : (
@@ -47,8 +47,8 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
               className="group relative rounded-lg bg-white/50 dark:bg-slate-800 hover:bg-white/70 dark:hover:bg-slate-700 p-3 backdrop-blur-sm transition-all"
             >
               <button onClick={() => onSessionSelect(session.id)} className="w-full text-left" type="button">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-200">{session.title}</h3>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{formatDate(session.createdAt)}</p>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{session.title}</h3>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{formatDate(session.createdAt)}</p>
               </button>
 
               {onSessionBookmark && (
@@ -70,7 +70,7 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
                   e.stopPropagation();
                   onSessionDelete(session.id);
                 }}
-                className="absolute bottom-2 right-2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 bg-white dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-600"
+                className="absolute bottom-2 right-2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600"
                 aria-label={t('chat_history_delete')}
                 type="button"
               >

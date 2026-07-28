@@ -205,8 +205,8 @@ export default function ChatInput({
           rows={5}
           className={`w-full resize-none border-none p-2 focus:outline-none ${
             disabled
-              ? 'cursor-not-allowed bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400'
-              : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-200'
+              ? 'cursor-not-allowed bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-300'
+              : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100'
           }`}
           placeholder={attachedFiles.length > 0 ? 'Add a message (optional)...' : t('chat_input_placeholder')}
           aria-label={t('chat_input_editor')}

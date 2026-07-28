@@ -712,7 +712,7 @@ export const ModelSettings = () => {
       <h3 className={`mb-2 text-lg font-medium text-gray-700 dark:text-gray-300`}>
         {agentName.charAt(0).toUpperCase() + agentName.slice(1)}
       </h3>
-      <p className={`mb-4 text-sm font-normal text-gray-500 dark:text-gray-400`}>{getAgentDescription(agentName)}</p>
+      <p className={`mb-4 text-sm font-normal text-gray-600 dark:text-gray-300`}>{getAgentDescription(agentName)}</p>
 
       <div className="space-y-4">
         {/* Model Selection */}
@@ -1213,7 +1213,7 @@ export const ModelSettings = () => {
                             {nameErrors[providerId]}
                           </p>
                         ) : (
-                          <p className={`ml-20 mt-1 text-xs text-gray-500 dark:text-gray-400`}>
+                          <p className={`ml-20 mt-1 text-xs text-gray-600 dark:text-gray-300`}>
                             {t('options_models_providers_custom_name_desc')}
                           </p>
                         )}
@@ -1252,7 +1252,7 @@ export const ModelSettings = () => {
                         {modifiedProviders.has(providerId) && !providersFromStorage.has(providerId) && (
                           <button
                             type="button"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200"
                             onClick={() => toggleApiKeyVisibility(providerId)}
                             aria-label={
                               visibleApiKeys[providerId]

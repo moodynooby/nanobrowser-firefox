@@ -78,7 +78,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
 
   return (
     <div className="p-2">
-      <h3 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-200">{t('chat_bookmarks_header')}</h3>
+      <h3 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-100">{t('chat_bookmarks_header')}</h3>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {bookmarks.map(bookmark => (
           <div
@@ -97,7 +97,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                   type="text"
                   value={editTitle}
                   onChange={e => setEditTitle(e.target.value)}
-                  className="mr-2 grow rounded px-2 py-1 text-sm border border-rose-100 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200"
+                  className="mr-2 grow rounded px-2 py-1 text-sm border border-rose-100 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                 />
                 <button
                   onClick={() => handleSaveEdit(bookmark.id)}
@@ -129,7 +129,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                     }}
                     className="w-full text-left"
                   >
-                    <div className="truncate pr-10 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    <div className="truncate pr-10 text-sm font-medium text-gray-900 dark:text-gray-100">
                       {bookmark.title}
                     </div>
                   </button>
@@ -158,7 +158,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                       onBookmarkDelete(bookmark.id);
                     }
                   }}
-                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 bg-white dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-600"
+                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600"
                   aria-label={t('chat_bookmarks_delete')}
                   type="button"
                 >

@@ -150,12 +150,11 @@ export const FirewallSettings = () => {
                     </li>
                   ))}
                 </ul>
-              ) : (
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+) : (
+                <p className="text-center text-sm text-gray-600 dark:text-gray-300">
                   {t('options_firewall_allowList_empty')}
                 </p>
-              )
-            ) : denyList.length > 0 ? (
+              ) : denyList.length > 0 ? (
               <ul className="space-y-2">
                 {denyList.map(url => (
                   <li
@@ -173,7 +172,7 @@ export const FirewallSettings = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-center text-sm text-gray-600 dark:text-gray-300">
                 {t('options_firewall_denyList_empty')}
               </p>
             )}

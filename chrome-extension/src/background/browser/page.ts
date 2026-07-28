@@ -1001,6 +1001,56 @@ export default class Page {
   }
 
   async sendKeys(keys: string): Promise<void> {
+    // Firefox fallback using chrome.scripting to dispatch keyboard events
+    if (isFirefox) {
+      try {
+        // Convert CDP-style key names to DOM KeyboardEvent key values
+        const keyMap: Record<string, string> = {
+          Enter: 'Enter',
+          Backspace: 'Backspace',
+          Delete: 'Delete',
+          ArrowLeft: 'ArrowLeft',
+          ArrowRight: 'ArrowRight',
+          ArrowUp: 'ArrowUp',
+          ArrowDown: 'ArrowDown',
+          Escape: 'Escape',
+          Tab: 'Tab',
+          Space: ' ',
+          Control: 'Control',
+          Shift: 'Shift',
+          Alt: 'Alt',
+          Meta: 'Meta',
+        };
+
+        // Split combination keys (e.g., "Control+A")
+        const keyParts = keys.split('+');
+        const keySequence = keyParts.map(k => {
+          const trimmed = k.trim();
+          return keyMap[trimmed] || (trimmed.length === 1 ? trimmed.toLowerCase() : trimmed);
+        });
+
+        await chrome.scripting.executeScript({
+          target: { tabId: this._tabId },
+          func: (keys: string[]) => {
+            for (const key of keys) {
+              const opts: KeyboardEventInit = { key, bubbles: true };
+              if (['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
+                (opts as any).modifier = true;
+              }
+              document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', opts));
+              document.activeElement?.dispatchEvent(new KeyboardEvent('keyup', opts));
+            }
+          },
+          args: [keySequence],
+        });
+        logger.info('sendKeys (Firefox) complete', keys);
+      } catch (error) {
+        logger.error('Failed to send keys (Firefox):', error);
+        throw new Error(`Failed to send keys: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      return;
+    }
+
     if (!this._puppeteerPage) {
       throw new Error('Puppeteer page is not connected');
     }

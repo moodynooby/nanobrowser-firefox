@@ -23,6 +23,16 @@ const logger = createLogger('background');
 // @ts-ignore - browser is provided by webextension-polyfill
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id;
 
+// Global error handlers to prevent service worker termination on unhandled errors
+self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  console.error('[SW] Unhandled promise rejection:', event.reason);
+  event.preventDefault();
+});
+
+self.addEventListener('error', (event: ErrorEvent) => {
+  console.error('[SW] Global error:', event.message, event.filename, event.lineno);
+});
+
 const browserContext = new BrowserContext({});
 let currentExecutor: Executor | null = null;
 // @ts-ignore - browser is provided by webextension-polyfill
@@ -44,8 +54,12 @@ if (isFirefox) {
 browser.tabs.onUpdated.addListener(
   // @ts-ignore - browser.tabs types not available from webextension-polyfill
   async (tabId: number, changeInfo: browser.tabs.TabChangeInfo, tab: browser.tabs.Tab) => {
-    if (tabId && changeInfo.status === 'complete' && tab.url?.startsWith('http')) {
-      await injectBuildDomTreeScripts(tabId);
+    try {
+      if (tabId && changeInfo.status === 'complete' && tab.url?.startsWith('http')) {
+        await injectBuildDomTreeScripts(tabId);
+      }
+    } catch (error) {
+      logger.error('Error in tabs.onUpdated handler:', error);
     }
   },
 );
@@ -110,12 +124,26 @@ browser.runtime.onConnect.addListener((port: browser.runtime.Port) => {
             if (!message.task) return port.postMessage({ type: 'error', error: t('bg_cmd_newTask_noTask') });
             if (!message.tabId) return port.postMessage({ type: 'error', error: t('bg_errors_noTabId') });
 
-            logger.info('new_task', message.tabId, message.task);
-            currentExecutor = await setupExecutor(message.taskId, message.task, browserContext);
-            subscribeToExecutorEvents(currentExecutor);
-
-            const result = await currentExecutor.execute();
-            logger.info('new_task execution result', message.tabId, result);
+            logger.info('new_task: received', message.tabId, message.task);
+            try {
+              logger.info('new_task: calling setupExecutor');
+              currentExecutor = await setupExecutor(message.taskId, message.task, browserContext);
+              logger.info('new_task: executor created, subscribing events');
+              subscribeToExecutorEvents(currentExecutor);
+              logger.info('new_task: events subscribed, starting execution');
+              const result = await currentExecutor.execute();
+              logger.info('new_task: execution complete', result);
+            } catch (execError) {
+              logger.error('new_task: execution failed', execError);
+              try {
+                port.postMessage({
+                  type: 'error',
+                  error: execError instanceof Error ? execError.message : t('errors_unknown'),
+                });
+              } catch (sendError) {
+                logger.error('new_task: failed to send error (port likely dead)', sendError);
+              }
+            }
             break;
           }
 
@@ -259,11 +287,15 @@ browser.runtime.onConnect.addListener((port: browser.runtime.Port) => {
             return port.postMessage({ type: 'error', error: t('errors_cmd_unknown', [message.type]) });
         }
       } catch (error) {
-        console.error('Error handling port message:', error);
-        port.postMessage({
-          type: 'error',
-          error: error instanceof Error ? error.message : t('errors_unknown'),
-        });
+        logger.error('Error handling port message:', error);
+        try {
+          port.postMessage({
+            type: 'error',
+            error: error instanceof Error ? error.message : t('errors_unknown'),
+          });
+        } catch (sendError) {
+          logger.error('Failed to send error response (port likely dead):', sendError);
+        }
       }
     });
 

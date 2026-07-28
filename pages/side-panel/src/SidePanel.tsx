@@ -345,7 +345,11 @@ const SidePanel = () => {
 
       portRef.current.onDisconnect.addListener(() => {
         const error = chrome.runtime.lastError;
-        console.log('Connection disconnected', error ? `Error: ${error.message}` : '');
+        console.error('Connection disconnected', {
+          error: error ? `Error: ${error.message}` : 'none (service worker likely terminated)',
+          hasPendingTask: !!pendingTaskRef.current,
+          timestamp: new Date().toISOString(),
+        });
         portRef.current = null;
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
@@ -1184,7 +1188,7 @@ const SidePanel = () => {
                   </>
                 )}
                 {messages.length > 0 && (
-                  <div className="scrollbar-gutter-stable flex-1 overflow-x-hidden overflow-y-scroll scroll-smooth p-2 dark:bg-slate-900/80">
+                  <div className="scrollbar-gutter-stable flex-1 overflow-x-hidden overflow-y-scroll scroll-smooth p-2 dark:bg-slate-900">
                     <MessageList messages={messages} />
                     <div ref={messagesEndRef} />
                   </div>
