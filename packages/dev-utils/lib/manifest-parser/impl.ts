@@ -14,8 +14,9 @@ function convertToFirefoxCompatibleManifest(manifest: Manifest) {
     ...manifest,
   } as { [key: string]: unknown };
 
+  const bg = manifest.background as { service_worker?: string; scripts?: string[] } | undefined;
   manifestCopy.background = {
-    scripts: [manifest.background?.service_worker],
+    scripts: [bg?.service_worker ?? bg?.scripts?.[0]],
     type: 'module',
   };
   manifestCopy.options_ui = {

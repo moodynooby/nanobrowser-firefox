@@ -14,7 +14,17 @@ function withFirefoxSidebar(manifest) {
   if (!isFirefox) {
     return manifest;
   }
-  return deepmerge(manifest, {
+
+  // Firefox doesn't support service_worker in MV3 - use scripts instead
+  const firefoxManifest = { ...manifest };
+  if (firefoxManifest.background?.service_worker) {
+    firefoxManifest.background = {
+      scripts: [firefoxManifest.background.service_worker],
+      type: firefoxManifest.background.type,
+    };
+  }
+
+  return deepmerge(firefoxManifest, {
     sidebar_action: {
       default_panel: 'side-panel/index.html',
       default_title: 'Nanobrowser',

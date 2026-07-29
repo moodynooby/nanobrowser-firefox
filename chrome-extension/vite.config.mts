@@ -20,7 +20,7 @@ function prependGlobalStubs(): PluginOption {
         const chunk = bundle[fileName];
         if (chunk.type === 'chunk' && fileName.endsWith('.iife.js')) {
           chunk.code =
-            `var __anthropic_sdk=typeof __anthropic_sdk!=='undefined'?__anthropic_sdk:{};var __puppeteer_browsers=typeof __puppeteer_browsers!=='undefined'?__puppeteer_browsers:{};var __zod_json_schema=typeof __zod_json_schema!=='undefined'?__zod_json_schema:{};\n` +
+            `var __anthropic_sdk=typeof __anthropic_sdk!=='undefined'?__anthropic_sdk:{};var __puppeteer_browsers=typeof __puppeteer_browsers!=='undefined'?__puppeteer_browsers:{};\n` +
             chunk.code;
         }
       }
@@ -76,17 +76,12 @@ export default defineConfig(({ mode }) => {
       reportCompressedSize: isProduction,
       watch: watchOption,
       rollupOptions: {
-        external: id =>
-          id === 'chrome' ||
-          id.startsWith('@anthropic-ai/sdk') ||
-          id.startsWith('@puppeteer/browsers') ||
-          id === 'zod-to-json-schema',
+        external: id => id === 'chrome' || id.startsWith('@anthropic-ai/sdk') || id.startsWith('@puppeteer/browsers'),
         output: {
           globals: id => {
             if (id === 'chrome') return 'chrome';
             if (id.startsWith('@anthropic-ai/sdk')) return '__anthropic_sdk';
             if (id.startsWith('@puppeteer/browsers')) return '__puppeteer_browsers';
-            if (id === 'zod-to-json-schema') return '__zod_json_schema';
             return 'undefined';
           },
         },
