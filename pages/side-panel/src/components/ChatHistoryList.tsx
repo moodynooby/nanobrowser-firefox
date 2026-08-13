@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import { t } from '@extension/i18n';
-import { BsBookmark } from 'react-icons/bs';
-import { FaTrash } from 'react-icons/fa';
+import { FiBookmark, FiTrash2 } from 'react-icons/fi';
 
 interface ChatSession {
   id: string;
@@ -61,7 +60,7 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
                   aria-label={t('chat_history_bookmark')}
                   type="button"
                 >
-                  <BsBookmark size={14} />
+                  <FiBookmark size={14} />
                 </button>
               )}
 
@@ -74,7 +73,7 @@ const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
                 aria-label={t('chat_history_delete')}
                 type="button"
               >
-                <FaTrash size={14} />
+                <FiTrash2 size={14} />
               </button>
             </div>
           ))}

@@ -2,7 +2,7 @@
 
 import { t } from '@extension/i18n';
 import { useEffect, useRef, useState } from 'react';
-import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
+import { FiCheck, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 
 interface Bookmark {
   id: number;
@@ -105,7 +105,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                   aria-label={t('chat_bookmarks_saveEdit')}
                   type="button"
                 >
-                  <FaCheck size={14} />
+                  <FiCheck size={14} />
                 </button>
                 <button
                   onClick={handleCancelEdit}
@@ -113,7 +113,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                   aria-label={t('chat_bookmarks_cancelEdit')}
                   type="button"
                 >
-                  <FaTimes size={14} />
+                  <FiX size={14} />
                 </button>
               </div>
             ) : (
@@ -148,7 +148,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                   aria-label={t('chat_bookmarks_edit')}
                   type="button"
                 >
-                  <FaPen size={14} />
+                  <FiEdit2 size={14} />
                 </button>
 
                 <button
@@ -162,7 +162,7 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                   aria-label={t('chat_bookmarks_delete')}
                   type="button"
                 >
-                  <FaTrash size={14} />
+                  <FiTrash2 size={14} />
                 </button>
               </>
             )}

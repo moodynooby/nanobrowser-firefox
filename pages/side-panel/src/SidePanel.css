@@ -1,3 +1,25 @@
+/* Soft rose/pink gradient background that replaces the former bg.jpg image.
+   The side panel has no Tailwind base styles, so base colors are set inline
+   via className (bg-white dark:bg-slate-900) and this layer only adds the
+   decorative gradient on top. */
+.sp-gradient {
+  background-image:
+    radial-gradient(circle at 100% 0%, #fff1f2 0%, transparent 35%),
+    radial-gradient(circle at 0% 100%, #fdf2f8 0%, transparent 35%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .sp-gradient {
+    background-image: radial-gradient(circle at 100% 0%, #1e1b2e 0%, transparent 40%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-progress {
+    animation: none;
+  }
+}
+
 /* Add this at the top of the file */
 body {
   border-color: rgb(159, 6, 11) !important; /* sky-200 color */

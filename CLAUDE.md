@@ -21,8 +21,7 @@ Nanobrowser is an open-source AI web automation Chrome extension that runs multi
 
 **Testing**:
 
-- `pnpm e2e` - Run end-to-end tests (builds and zips first)
-- `pnpm zip` - Create extension zip for distribution
+- `pnpm zip` - Create extension zip for distribution (also `pnpm zip:firefox` for `.xpi`)
 - `pnpm -F chrome-extension test` - Run unit tests (Vitest) for core extension
   - Targeted example: `pnpm -F chrome-extension test -- -t "Sanitizer"`
 
@@ -73,10 +72,8 @@ This is a **monorepo** using **Turbo** for build orchestration and **pnpm worksp
 - `shared/` - Common utilities and types
 - `storage/` - Chrome extension storage abstraction
 - `ui/` - Shared React components
-- `schema-utils/` - Validation schemas
 - `i18n/` - Internationalization
-- Others: `dev-utils/`, `zipper/`, `vite-config/`, `tailwind-config/`, `hmr/`,
-  `tsconfig/`
+- Others: `vite-config/`, `tailwind-config/`, `hmr/`, `tsconfig/`
 
 ### Multi-Agent System
 

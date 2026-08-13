@@ -1,7 +1,6 @@
 import { t } from '@extension/i18n';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { FaMicrophone } from 'react-icons/fa';
+import { FiLoader, FiMic } from 'react-icons/fi';
 
 interface ChatInputProps {
   onSendMessage: (text: string, displayText?: string) => void;
@@ -264,9 +263,9 @@ export default function ChatInput({
                 }`}
               >
                 {isProcessingSpeech ? (
-                  <AiOutlineLoading3Quarters className="size-4 animate-spin" />
+                  <FiLoader className="size-4 animate-spin" />
                 ) : (
-                  <FaMicrophone className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
+                  <FiMic className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
                 )}
               </button>
             )}

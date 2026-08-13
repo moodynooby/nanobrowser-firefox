@@ -4,9 +4,7 @@ import { t } from '@extension/i18n';
 import { Actors, agentModelStore, chatHistoryStore, generalSettingsStore, type Message } from '@extension/storage';
 import favoritesStorage, { type FavoritePrompt } from '@extension/storage/lib/prompt/favorites';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FiSettings } from 'react-icons/fi';
-import { GrHistory } from 'react-icons/gr';
-import { PiPlusBold } from 'react-icons/pi';
+import { FiClock, FiPlus, FiSettings } from 'react-icons/fi';
 import BookmarkList from './components/BookmarkList';
 import ChatHistoryList from './components/ChatHistoryList';
 import ChatInput from './components/ChatInput';
@@ -1064,7 +1062,7 @@ const SidePanel = () => {
 
   return (
     <div>
-      <div className="flex h-screen flex-col bg-white dark:bg-slate-900 bg-[url('/bg.jpg')] dark:bg-none bg-cover bg-no-repeat overflow-hidden border border-rose-200 dark:border-rose-900 ">
+      <div className="flex h-screen flex-col sp-gradient overflow-hidden border border-rose-200 dark:border-rose-900">
         <header className="header relative">
           <div className="header-logo">
             {showHistory ? (
@@ -1091,7 +1089,7 @@ const SidePanel = () => {
                   aria-label={t('nav_newChat_a11y')}
                   tabIndex={0}
                 >
-                  <PiPlusBold size={20} />
+                  <FiPlus size={20} />
                 </button>
                 <button
                   type="button"
@@ -1101,7 +1099,7 @@ const SidePanel = () => {
                   aria-label={t('nav_loadHistory_a11y')}
                   tabIndex={0}
                 >
-                  <GrHistory size={20} />
+                  <FiClock size={20} />
                 </button>
               </>
             )}

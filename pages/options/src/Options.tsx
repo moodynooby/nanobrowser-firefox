@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-import '@src/Options.css';
 import { t } from '@extension/i18n';
 import { withErrorBoundary, withSuspense } from '@extension/shared';
 import { Button } from '@extension/ui';
+import { useEffect, useState } from 'react';
 import { FiCpu, FiSettings, FiShield } from 'react-icons/fi';
 import { FirewallSettings } from './components/FirewallSettings';
 import { GeneralSettings } from './components/GeneralSettings';
@@ -37,25 +36,27 @@ const Options = () => {
   };
 
   return (
-    <div className="options-page">
-      <header className="options-header">
-        <h1>{t('options_nav_header')}</h1>
-        <div className="options-tabs">
+    <div className="flex min-h-screen min-w-[768px] flex-col bg-white text-gray-900 dark:bg-slate-900 dark:text-slate-100 sp-gradient">
+      <header className="border-b border-white/20 bg-rose-50/10 px-8 pt-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/80">
+        <h1 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">{t('options_nav_header')}</h1>
+        <div className="flex gap-0 overflow-x-auto">
           {TABS.map(item => (
             <button
               key={item.id}
               onClick={() => handleTabClick(item.id)}
-              className={`options-tab ${activeTab === item.id ? 'options-tab--active' : ''}`}
+              className={`flex cursor-pointer items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-5 py-2.5 text-[0.9375rem] font-medium text-gray-700 transition-colors duration-150 hover:text-rose-600 ${
+                activeTab === item.id ? 'border-rose-600 text-rose-600 dark:border-rose-500 dark:text-rose-500' : ''
+              }`}
             >
-              <item.icon />
+              <item.icon className="size-4" />
               <span>{item.label}</span>
             </button>
           ))}
         </div>
       </header>
 
-      <main className="options-content">
-        <div className="options-content-inner">{renderTabContent()}</div>
+      <main className="flex-1 overflow-y-auto bg-white/10 p-8 backdrop-blur-sm dark:bg-transparent">
+        <div className="mx-auto min-w-[512px] max-w-[900px]">{renderTabContent()}</div>
       </main>
     </div>
   );

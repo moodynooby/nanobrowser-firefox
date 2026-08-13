@@ -2,6 +2,160 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* Soft rose/pink gradient background that replaces the former bg.jpg image */
+  .sp-gradient {
+    background-image:
+      radial-gradient(circle at 100% 0%, #fff1f2 0%, transparent 35%),
+      radial-gradient(circle at 0% 100%, #fdf2f8 0%, transparent 35%);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .sp-gradient {
+      background-image: radial-gradient(circle at 100% 0%, #1e1b2e 0%, transparent 40%);
+    }
+  }
+
+  /* Shared option-page form and card utilities (replaces Options.css BEM classes) */
+  .opt-card {
+    border-radius: 0.5rem;
+    border: 1px solid #fecdd3;
+    background: #fff;
+    padding: 1.5rem;
+    text-align: left;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .opt-card-title {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .opt-form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .opt-form-row + .opt-form-row {
+    margin-top: 1rem;
+  }
+
+  .opt-form-section > .opt-form-row {
+    margin-top: 0;
+  }
+
+  .opt-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .opt-form-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .opt-form-desc {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #6b7280;
+  }
+
+  .opt-form-input {
+    width: 5rem;
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .opt-form-input {
+      border-color: #475569;
+      background: #334155;
+      color: #e2e8f0;
+    }
+  }
+
+  .opt-form-input:focus {
+    border-color: #e11d48;
+    box-shadow: 0 0 0 2px rgba(254, 205, 211, 0.5);
+  }
+
+  .opt-toggle {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+  }
+
+  .opt-toggle input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .opt-toggle-track {
+    position: relative;
+    display: block;
+    width: 3rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: #d1d5db;
+    transition: background-color 0.2s;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .opt-toggle-track {
+      background: #475569;
+    }
+  }
+
+  .opt-toggle input:checked + .opt-toggle-track {
+    background: #e11d48;
+  }
+
+  .opt-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .opt-toggle-thumb {
+      border-color: #334155;
+    }
+  }
+
+  .opt-toggle input:checked + .opt-toggle-track .opt-toggle-thumb {
+    transform: translateX(1.5rem);
+    border-color: #fff;
+  }
+
+  .opt-toggle input:focus-visible + .opt-toggle-track {
+    box-shadow: 0 0 0 4px rgba(254, 205, 211, 0.5);
+  }
+}
+
 body {
   margin: 0;
   font-family:
