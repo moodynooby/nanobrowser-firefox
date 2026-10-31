@@ -1,8 +1,0 @@
-{
-  "name": "@extension/tailwindcss-config",
-  "version": "0.4.1",
-  "description": "chrome extension - tailwindcss configuration",
-  "type": "module",
-  "main": "tailwind.config.ts",
-  "private": true
-}
