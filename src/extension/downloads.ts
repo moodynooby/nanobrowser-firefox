@@ -7,11 +7,13 @@ const held = new Set<string>();
 const naming = new Map<string, string>();
 
 async function ensureOffscreen(): Promise<void> {
+  if (!chrome.offscreen) return;
   const url = chrome.runtime.getURL(OFFSCREEN);
-  const contexts = await chrome.runtime.getContexts({
-    contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
-    documentUrls: [url],
-  });
+  const contexts =
+    (await chrome.runtime.getContexts?.({
+      contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
+      documentUrls: [url],
+    })) ?? [];
   if (contexts.length) return;
   await chrome.offscreen.createDocument({
     url: OFFSCREEN,
@@ -22,6 +24,10 @@ async function ensureOffscreen(): Promise<void> {
 
 async function revoke(url: string): Promise<void> {
   if (!held.delete(url)) return;
+  if (!chrome.offscreen) {
+    URL.revokeObjectURL(url);
+    return;
+  }
   const answer = (await chrome.runtime.sendMessage({ target: 'offscreen', type: 'revoke', url }).catch(() => null)) as {
     held?: number;
   } | null;
@@ -30,6 +36,14 @@ async function revoke(url: string): Promise<void> {
 
 /** A blob URL for the content, made in the offscreen document. */
 export async function blobUrl(content: string, mimeType: string): Promise<string> {
+  if (!chrome.offscreen) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    held.add(url);
+    // Revoked anyway after 10 minutes.
+    setTimeout(() => void revoke(url), 10 * 60_000);
+    return url;
+  }
   await ensureOffscreen();
   const answer = (await chrome.runtime.sendMessage({ target: 'offscreen', type: 'blob-url', content, mimeType })) as {
     url: string;

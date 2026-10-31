@@ -144,7 +144,7 @@ export class TabScope {
     await save();
     await this.#group(conversationId, tab);
     // The panel follows the group: the conversation's panel is enabled on every tab in it.
-    await chrome.sidePanel.setOptions({ tabId, path: PANEL_PATH, enabled: true }).catch(() => undefined);
+    await chrome.sidePanel?.setOptions?.({ tabId, path: PANEL_PATH, enabled: true })?.catch?.(() => undefined);
     this.hooks.changed(conversationId, [tabId], []);
     return { ok: true };
   }
@@ -164,7 +164,7 @@ export class TabScope {
       await chrome.tabs.ungroup(tabId).catch(() => undefined);
       this.#grouping.delete(tabId);
     }
-    if (!options.keepPanel) await chrome.sidePanel.setOptions({ tabId, enabled: false }).catch(() => undefined);
+    if (!options.keepPanel) await chrome.sidePanel?.setOptions?.({ tabId, enabled: false })?.catch?.(() => undefined);
     await chrome.action.setBadgeText({ tabId, text: '' }).catch(() => undefined);
     this.hooks.changed(conversationId, [], [tabId]);
   }

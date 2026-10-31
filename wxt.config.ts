@@ -19,24 +19,51 @@ export default defineConfig({
   alias: {
     '@src': 'src',
   },
-  manifest: {
-    // The name, description and the strings Chrome shows itself follow Chrome's language (public/_locales).
-    name: '__MSG_extName__',
-    description: '__MSG_extDescription__',
-    default_locale: 'en',
-    minimum_chrome_version: '125',
-    host_permissions: ['<all_urls>'],
-    ...permissionLists(productPermissions ? 'product' : 'autorun'),
-    action: { default_icon: 'icon-32.png', default_title: '__MSG_actionTitle__' },
-    icons: { 128: 'icon-128.png' },
-    commands: {
-      'open-panel': { suggested_key: { default: 'Alt+Shift+N' }, description: '__MSG_commandOpenPanel__' },
-      'open-test-panel': { description: 'Open the browser control test panel (developers)' },
-    },
+  manifest: ({ browser }) => {
+    const isFirefox = browser === 'firefox';
+    const permissions = permissionLists(productPermissions ? 'product' : 'autorun');
+    if (isFirefox) {
+      // Filter out Chrome-only permissions for Firefox
+      permissions.permissions = permissions.permissions.filter(
+        p => p !== 'sidePanel' && p !== 'offscreen' && p !== 'debugger',
+      );
+      permissions.optional_permissions = permissions.optional_permissions.filter(p => p !== 'tabGroups');
+    }
+    return {
+      // The name, description and the strings Chrome shows itself follow Chrome's language (public/_locales).
+      name: '__MSG_extName__',
+      description: '__MSG_extDescription__',
+      default_locale: 'en',
+      ...(isFirefox ? {} : { minimum_chrome_version: '125' }),
+      host_permissions: ['<all_urls>'],
+      ...permissions,
+      action: { default_icon: 'icon-32.png', default_title: '__MSG_actionTitle__' },
+      icons: { 128: 'icon-128.png' },
+      commands: {
+        'open-panel': { suggested_key: { default: 'Alt+Shift+N' }, description: '__MSG_commandOpenPanel__' },
+        'open-test-panel': { description: 'Open the browser control test panel (developers)' },
+      },
+      ...(isFirefox
+        ? {
+            browser_specific_settings: {
+              gecko: {
+                id: 'manas@manas.com',
+                strict_min_version: '115.0',
+                data_collection_permissions: {
+                  required: ['browsingActivity', 'websiteContent'],
+                  optional: ['technicalAndInteraction'],
+                },
+              },
+            },
+          }
+        : {}),
+    };
   },
   // `pnpm zip` packs dist/ into dist-zip/, outside the folder Chrome loads.
   zip: {
-    artifactTemplate: '../dist-zip/{{name}}-{{version}}.zip',
+    artifactTemplate: process.argv.includes('firefox')
+      ? '../dist-zip/{{name}}-{{version}}-firefox.zip'
+      : '../dist-zip/{{name}}-{{version}}.zip',
     exclude: ['**/*.map'],
   },
   hooks: {

@@ -50,7 +50,7 @@ const STARTERS = [
  * called before any await; the conversation's panel is already enabled on its tabs.
  */
 function showTab(tabId: number): void {
-  chrome.sidePanel.open({ tabId }).catch(() => undefined);
+  chrome.sidePanel?.open?.({ tabId })?.catch?.(() => undefined);
   void chrome.tabs
     .update(tabId, { active: true })
     .then(tab => (tab ? chrome.windows.update(tab.windowId, { focused: true }) : undefined))

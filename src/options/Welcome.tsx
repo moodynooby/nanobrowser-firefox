@@ -42,8 +42,8 @@ export function Welcome() {
     // The panel opens on this tab inside the click: sidePanel.open needs the user's gesture.
     const id = tabId.current;
     if (id !== undefined) {
-      void chrome.sidePanel.setOptions({ tabId: id, path: PANEL_PATH, enabled: true });
-      chrome.sidePanel.open({ tabId: id }).catch(() => undefined);
+      void chrome.sidePanel?.setOptions?.({ tabId: id, path: PANEL_PATH, enabled: true });
+      chrome.sidePanel?.open?.({ tabId: id })?.catch?.(() => undefined);
     }
     void settingsStorage.set(s => ({ ...s, onboarded: true }));
   };

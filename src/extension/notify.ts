@@ -53,7 +53,7 @@ function onClicked(id: string): void {
   clearNotification(id);
   if (tabId === undefined) return;
   // A click is a user gesture: the panel may open here (it is not known whether Chrome accepts it).
-  chrome.sidePanel.open({ tabId }).catch(() => undefined);
+  chrome.sidePanel?.open?.({ tabId })?.catch?.(() => undefined);
   void chrome.tabs.update(tabId, { active: true }).then(tab => {
     if (tab?.windowId !== undefined) void chrome.windows.update(tab.windowId, { focused: true });
   });
