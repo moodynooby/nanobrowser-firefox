@@ -68,19 +68,5 @@
     "vite": "^8.3.5",
     "vitest": "5.0.5",
     "wxt": "0.21.4"
-  },
-  "packageManager": "pnpm@10.34.7",
-  "engines": {
-    "node": ">=24.22.1",
-    "pnpm": "^10.34.7",
-    "npm": "please-use-pnpm"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ],
-    "overrides": {
-      "postcss-selector-parser": "^7.1.6"
-    }
   }
 }
